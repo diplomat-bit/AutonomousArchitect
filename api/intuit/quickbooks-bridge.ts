@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { activeTokens, INTUIT_ACCOUNTING_BASE } from '../index';
+import { activeTokens } from '../index.js';
 
 export interface QuickBooksLinkedRecord {
   bridgeId: string;
