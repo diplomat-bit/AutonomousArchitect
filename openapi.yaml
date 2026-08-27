@@ -1,0 +1,238 @@
+openapi: 3.0.3
+info:
+  title: aibanking.dev & QuickBooks Autonomous Ledger Hub API
+  description: Enterprise fintech API gateway for AI-powered banking schema transformation, QuickBooks Online (QBO) V3 integration, and Firestore persistence.
+  version: 1.0.0
+servers:
+  - url: https://aibanking.dev
+    description: Production Cloud Run Gateway
+  - url: http://localhost:3000
+    description: Local Development Server
+paths:
+  /api/auth/register:
+    post:
+      summary: Register Developer Account & Generate Master Key
+      description: Creates a new developer account in Firestore and provisions an initial live API key.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  example: developer@company.com
+                name:
+                  type: string
+                  example: Jane Doe
+      responses:
+        '201':
+          description: Account created successfully with API key.
+  
+  /api/keys:
+    get:
+      summary: List User API Keys
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          description: Developer email address
+      responses:
+        '200':
+          description: List of API keys associated with the account.
+    post:
+      summary: Generate New Service API Key
+      parameters:
+        - in: header
+          name: x-api-key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Staging Microservice
+                userEmail:
+                  type: string
+                  example: developer@company.com
+                rateLimit:
+                  type: integer
+                  example: 5000
+      responses:
+        '201':
+          description: API Key generated successfully.
+
+  /api/keys/{id}:
+    delete:
+      summary: Revoke API Key
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: API key successfully revoked.
+
+  /api/intuit/universal/transform-and-ingest:
+    post:
+      summary: AI Banking Schema Transform & Ingest
+      description: Maps arbitrary banking JSON (Citi, Chase, Visa, loans, IRAs) into QuickBooks Online entities using Gemini.
+      parameters:
+        - in: header
+          name: x-api-key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rawData
+              properties:
+                rawData:
+                  type: object
+                targetEntity:
+                  type: string
+                  enum: [Account, Invoice, Customer, Payment]
+                  default: Account
+                realmId:
+                  type: string
+                accessToken:
+                  type: string
+      responses:
+        '200':
+          description: Successfully transformed and ingested.
+
+  /api/intuit/universal/file-upload-ingest:
+    post:
+      summary: Unstructured File & cURL Ingestion
+      parameters:
+        - in: header
+          name: x-api-key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fileContent
+              properties:
+                fileContent:
+                  type: string
+                fileName:
+                  type: string
+                fileType:
+                  type: string
+      responses:
+        '200':
+          description: File parsed and entities extracted.
+
+  /api/intuit/query:
+    post:
+      summary: QuickBooks SQL Query Engine
+      parameters:
+        - in: header
+          name: x-api-key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  example: SELECT * FROM Account MAXRESULTS 20
+      responses:
+        '200':
+          description: Query results returned from QuickBooks.
+
+  /api/intuit/suite/curl-runner:
+    post:
+      summary: Headless cURL Proxy Dispatcher
+      parameters:
+        - in: header
+          name: x-api-key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - endpoint
+              properties:
+                endpoint:
+                  type: string
+                method:
+                  type: string
+                  default: GET
+                body:
+                  type: object
+      responses:
+        '200':
+          description: Remote request executed and proxied.
+
+  /api/records:
+    get:
+      summary: Retrieve Firestore Stored Banking Records
+      responses:
+        '200':
+          description: List of stored records.
+    post:
+      summary: Persist Banking Record to Firestore
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accountGroup:
+                  type: string
+                entityType:
+                  type: string
+                payload:
+                  type: object
+      responses:
+        '201':
+          description: Record successfully persisted.
+
+  /api/logs:
+    get:
+      summary: Retrieve Audit Telemetry Logs
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Audit logs returned.

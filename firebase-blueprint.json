@@ -1,0 +1,90 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Developer and user accounts with API credentials and role access.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "developer", "user"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "email", "name", "role", "createdAt"]
+    },
+    "ApiKey": {
+      "title": "ApiKey",
+      "description": "Cryptographically secure API keys generated for external developers to invoke aibanking.dev endpoints.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "key": { "type": "string" },
+        "keyPrefix": { "type": "string" },
+        "name": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "revoked"] },
+        "rateLimit": { "type": "number" },
+        "totalCalls": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "lastUsedAt": { "type": "string" }
+      },
+      "required": ["id", "key", "userId", "status", "createdAt"]
+    },
+    "ApiLog": {
+      "title": "ApiLog",
+      "description": "Real-time audit telemetry of incoming API requests, latency, status code, and endpoint provenance.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "apiKeyId": { "type": "string" },
+        "apiKeyPrefix": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "endpoint": { "type": "string" },
+        "method": { "type": "string" },
+        "statusCode": { "type": "number" },
+        "durationMs": { "type": "number" },
+        "clientIp": { "type": "string" },
+        "payloadSummary": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "endpoint", "method", "statusCode"]
+    },
+    "StoredRecord": {
+      "title": "StoredRecord",
+      "description": "Persisted financial records, banking statements, Citi/Chase payloads, and QBO generated entities.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "apiKeyId": { "type": "string" },
+        "accountGroup": { "type": "string" },
+        "entityType": { "type": "string" },
+        "payload": { "type": "object" },
+        "status": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "provenance": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User account profiles"
+    },
+    "/api_keys/{keyId}": {
+      "schema": "ApiKey",
+      "description": "Developer API access keys"
+    },
+    "/api_logs/{logId}": {
+      "schema": "ApiLog",
+      "description": "Audit trails for API requests"
+    },
+    "/stored_records/{recordId}": {
+      "schema": "StoredRecord",
+      "description": "Ingested banking data and QBO synced entities"
+    }
+  }
+}

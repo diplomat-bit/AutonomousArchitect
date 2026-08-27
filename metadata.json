@@ -1,0 +1,6 @@
+{
+  "name": "QuickBooks OAuth 2.0 Scaffold & Sandbox Runner",
+  "description": "Enterprise multi-bank gateway uniting QuickBooks Online, Chase Loyalty Rewards, Mastercard Open Finance (Finicity), Google IAM Token Minters, and AI Banking Ingest.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
