@@ -27,6 +27,8 @@ import {
 export default function DocumentationHub() {
   const [selectedDoc, setSelectedDoc] = useState<
     | 'finicity'
+    | 'mastercard_mgmt'
+    | 'bridge_batch'
     | 'overview'
     | 'auth'
     | 'chase'
@@ -60,6 +62,7 @@ export default function DocumentationHub() {
       title: 'Mastercard & Chase Open Banking',
       items: [
         { id: 'finicity', label: 'Mastercard Open Finance (Finicity)', icon: Layers },
+        { id: 'mastercard_mgmt', label: 'Mastercard Developers Project API', icon: Cpu },
         { id: 'chase', label: 'Chase Loyalty & Pay With Points', icon: CreditCard },
       ],
     },
@@ -74,6 +77,7 @@ export default function DocumentationHub() {
       title: 'AI Ingestion & Universal Transform',
       items: [
         { id: 'universal', label: 'Universal AI Transform & Ingest', icon: Sparkles },
+        { id: 'bridge_batch', label: 'High-Speed Batch QuickBooks Bridge', icon: Zap },
         { id: 'fileupload', label: 'Unstructured File Upload Ingestion', icon: FileCode },
       ],
     },
@@ -310,6 +314,230 @@ export default function DocumentationHub() {
 --header 'Finicity-App-Token: {{appToken}}'`}
                 </pre>
               </div>
+            </div>
+          </div>
+        )}
+
+        {selectedDoc === 'mastercard_mgmt' && (
+          <div className="space-y-6">
+            <div className="border-b border-slate-800 pb-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs bg-amber-500/20 text-amber-300 font-mono px-2.5 py-1 rounded border border-amber-500/30">
+                  Mastercard Developers API
+                </span>
+                <span className="text-xs bg-red-500/20 text-red-300 font-mono px-2.5 py-1 rounded border border-red-500/30">
+                  Project & Credential Lifecycle
+                </span>
+                <span className="text-xs bg-indigo-500/20 text-indigo-300 font-mono px-2.5 py-1 rounded border border-indigo-500/30">
+                  developer.mastercard.com
+                </span>
+              </div>
+              <h1 className="text-3xl font-bold text-white tracking-tight">Mastercard Developers Project Lifecycle API</h1>
+              <p className="text-slate-400 text-sm">
+                Programmatic API reference for creating projects, provisioning Sandbox/Production environments, generating Partner/Signing/MTLS credentials, and attaching dynamic services (Open Finance 1443, Mastercard Encryption 405).
+              </p>
+            </div>
+
+            {/* Project Types Matrix */}
+            <div className="space-y-3">
+              <h3 className="text-base font-bold text-white">1. Project Authentication Types</h3>
+              <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden text-xs">
+                <table className="w-full text-left font-mono">
+                  <thead className="bg-slate-900 border-b border-slate-800 text-slate-300 text-[11px]">
+                    <tr>
+                      <th className="p-3">Type</th>
+                      <th className="p-3">Schema</th>
+                      <th className="p-3">Usage</th>
+                      <th className="p-3">Compatible Services</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-900 text-slate-300">
+                    <tr>
+                      <td className="p-3 text-red-400 font-bold">OPEN_BANKING_PARTNER</td>
+                      <td className="p-3 text-slate-400">NewOpenBankingPartnerProject</td>
+                      <td className="p-3">Mastercard Open Finance suite of APIs</td>
+                      <td className="p-3 text-emerald-400">OPEN_BANKING_PARTNER</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 text-blue-400 font-bold">OAUTH10A</td>
+                      <td className="p-3 text-slate-400">NewOAuth10AProject</td>
+                      <td className="p-3">Mastercard APIs with OAuth 1.0a</td>
+                      <td className="p-3 text-indigo-400">OAUTH10A, DUAL_OAUTH</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 text-purple-400 font-bold">MTLS</td>
+                      <td className="p-3 text-slate-400">NewMTLSProject</td>
+                      <td className="p-3">APIs using MTLS protocol (X.509/CSR)</td>
+                      <td className="p-3 text-purple-400">MTLS</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 text-emerald-400 font-bold">OAUTH2_FAPI</td>
+                      <td className="p-3 text-slate-400">NewOAuth2FapiProject</td>
+                      <td className="p-3">OAuth 2.0 + FAPI security profiles</td>
+                      <td className="p-3 text-indigo-400">OAUTH2_FAPI, DUAL_OAUTH</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Create Project API */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="bg-emerald-500/20 text-emerald-400 font-bold font-mono px-2 py-0.5 rounded text-xs">POST</span>
+                  <span className="text-white font-bold text-sm">Create Project: /developer/projects</span>
+                </div>
+                <button
+                  onClick={() =>
+                    copyCode(`curl --location --request POST 'https://api.mastercard.com/developer/projects' \\\n--header 'Content-Type: application/json' \\\n--header 'Accept: application/json' \\\n--data-raw '{\n  "type": "OPEN_BANKING_PARTNER",\n  "name": "My Open Finance Project",\n  "region": "US",\n  "service": {\n    "serviceId": 1443\n  },\n  "environment": "SANDBOX",\n  "credential": {\n    "type": "PARTNER",\n    "description": "Partner credential for banking aggregation"\n  },\n  "company": {\n    "name": "Client Company Name",\n    "isGovernmentEntity": false,\n    "address": {\n      "type": "Headquarters",\n      "addressLine1": "420 8th Street S.E",\n      "addressLine2": "Brooklyn, NY",\n      "city": "NYC",\n      "state": "NY",\n      "postalCode": "90210",\n      "countryCode": "USA"\n    }\n  },\n  "commercialCountries": ["USA"]\n}'`)
+                  }
+                  className="text-slate-400 hover:text-white text-xs flex items-center gap-1 font-mono"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copy cURL
+                </button>
+              </div>
+
+              <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-slate-300 space-y-3">
+                <div className="text-slate-400 text-xs">// Request Payload</div>
+                <pre className="text-amber-300 overflow-x-auto">
+{`{
+  "type": "OPEN_BANKING_PARTNER",
+  "name": "My Open Finance Project",
+  "region": "US",
+  "service": {
+    "serviceId": 1443
+  },
+  "environment": "SANDBOX",
+  "credential": {
+    "type": "PARTNER",
+    "description": "A custom description for the credential"
+  },
+  "company": {
+    "name": "Client Company Name",
+    "isGovernmentEntity": false,
+    "address": {
+      "type": "Headquarters",
+      "addressLine1": "420 8th Street S.E",
+      "addressLine2": "Brooklyn, NY",
+      "city": "NYC",
+      "state": "NY",
+      "postalCode": "90210",
+      "countryCode": "USA"
+    }
+  },
+  "commercialCountries": ["USA"]
+}`}
+                </pre>
+
+                <div className="text-slate-400 text-xs pt-2">// 200 OK Response</div>
+                <pre className="text-emerald-400 overflow-x-auto">
+{`{
+  "id": "1c1ea17e-260d-11ee-be56-0242ac120002",
+  "name": "My Open Finance Project",
+  "type": "OPEN_BANKING_PARTNER",
+  "region": "US",
+  "environments": [
+    {
+      "name": "SANDBOX",
+      "credentials": [
+        {
+          "id": "04bcdc45-9a96-4516-a7b0-49a26440d405",
+          "type": "PARTNER",
+          "partnerId": "2445583866521",
+          "appKey": "555617add4733a9befefa2560cdcfb71",
+          "plan": "Test Drive",
+          "status": "APPROVED",
+          "secrets": [
+            {
+              "secret": "SdknnFTYoAlWgFakTHy1",
+              "expirationDate": "2028-10-25T15:24:20Z"
+            }
+          ]
+        }
+      ],
+      "projectServices": [{ "serviceId": 1443, "status": "APPROVED" }]
+    }
+  ],
+  "services": [{ "id": 1443, "name": "Open Finance" }]
+}`}
+                </pre>
+              </div>
+            </div>
+
+            {/* Environment Promotion & Service Attach */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="bg-blue-500/20 text-blue-400 font-bold font-mono px-2 py-0.5 rounded text-[11px]">POST</span>
+                  <span className="text-white font-bold text-xs">/projects/&#123;id&#125;/environments</span>
+                </div>
+                <p className="text-slate-400 text-xs">Promotes a project to "PRODUCTION" and mints production PARTNER or MTLS keys.</p>
+                <pre className="bg-slate-900 p-2.5 rounded text-[11px] font-mono text-blue-300">
+{`{
+  "name": "PRODUCTION",
+  "credential": {
+    "type": "PARTNER",
+    "description": "Production credentials"
+  }
+}`}
+                </pre>
+              </div>
+
+              <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="bg-purple-500/20 text-purple-400 font-bold font-mono px-2 py-0.5 rounded text-[11px]">POST</span>
+                  <span className="text-white font-bold text-xs">/projects/&#123;id&#125;/environments/SANDBOX/services</span>
+                </div>
+                <p className="text-slate-400 text-xs">Enrolls dynamic service IDs (e.g. 405 Mastercard Encryption) with CSR keys.</p>
+                <pre className="bg-slate-900 p-2.5 rounded text-[11px] font-mono text-purple-300">
+{`{
+  "serviceId": 405,
+  "environment": {
+    "name": "SANDBOX",
+    "serviceDetails": {
+      "credentials": [{ "type": "MASTERCARD_ENCRYPTION", "alias": "my-key", "csr": "..." }]
+    }
+  }
+}`}
+                </pre>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {selectedDoc === 'bridge_batch' && (
+          <div className="space-y-6">
+            <div className="border-b border-slate-800 pb-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs bg-emerald-500/20 text-emerald-300 font-mono px-2.5 py-1 rounded border border-emerald-500/30">
+                  High-Speed Bridge
+                </span>
+                <span className="text-xs bg-indigo-500/20 text-indigo-300 font-mono px-2.5 py-1 rounded border border-indigo-500/30">
+                  POST /api/bridge/import-transactions
+                </span>
+              </div>
+              <h1 className="text-3xl font-bold text-white tracking-tight">Direct Batch Ledger Bridge</h1>
+              <p className="text-slate-400 text-sm">
+                Single-call parallel batch ingestion for raw Finicity, Citi, Chase, and credit card payloads directly into QuickBooks Journal Entries or Chart of Accounts.
+              </p>
+            </div>
+
+            <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-slate-300 space-y-3">
+              <div className="text-slate-400 text-xs">// cURL Invocation</div>
+              <pre className="text-emerald-400 overflow-x-auto">
+{`curl -X POST https://aibanking.dev/api/bridge/import-transactions \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "transactions": [
+      { "id": "TX-01", "description": "Client Advisory Retainer", "amount": 5400.00, "date": "2026-08-27" },
+      { "id": "TX-02", "description": "Cloud Hosting Compute", "amount": -850.25, "date": "2026-08-26" }
+    ],
+    "source": "FINICITY_LIVE",
+    "targetType": "JournalEntry",
+    "realmId": "9341453267972001"
+  }'`}
+              </pre>
             </div>
           </div>
         )}
@@ -601,7 +829,7 @@ paths:
           </div>
         )}
 
-        {selectedDoc !== 'overview' && selectedDoc !== 'auth' && selectedDoc !== 'universal' && selectedDoc !== 'openapi' && (
+        {selectedDoc !== 'overview' && selectedDoc !== 'auth' && selectedDoc !== 'universal' && selectedDoc !== 'openapi' && selectedDoc !== 'finicity' && selectedDoc !== 'mastercard_mgmt' && selectedDoc !== 'bridge_batch' && selectedDoc !== 'chase' && (
           <div className="space-y-6">
             <div className="border-b border-slate-800 pb-4 space-y-2">
               <span className="text-xs bg-blue-500/20 text-blue-300 font-mono px-2.5 py-1 rounded border border-blue-500/30">
