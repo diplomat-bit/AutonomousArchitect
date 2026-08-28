@@ -1008,14 +1008,17 @@ public class WesternUnionPsd2Signer {
                   </h3>
                   <button
                     onClick={() => {
-                      const envText = `WESTERN_UNION_ENVIRONMENT="${configData?.portal?.environment || 'sandbox'}"
+                      const maskedPw = authPassword ? '••••••••' : '';
+                      const maskedOtp = authOtp ? '••••••••' : '';
+                      const envText = `# Western Union PSD2 Open Banking Environment Template
+WESTERN_UNION_ENVIRONMENT="${configData?.portal?.environment || 'sandbox'}"
 WESTERN_UNION_BASE_URL="${configData?.portal?.baseUrl || 'https://api-sandbox.westernunion.com/psd2/v1'}"
 WESTERN_UNION_DEVELOPER_EMAIL="${authEmail || 'developer@westernunion.com'}"
-WESTERN_UNION_DEVELOPER_PASSWORD="${authPassword || ''}"
-WESTERN_UNION_OTP="${authOtp || ''}"
+WESTERN_UNION_DEVELOPER_PASSWORD="${maskedPw}"
+WESTERN_UNION_OTP="${maskedOtp}"
 WESTERN_UNION_TPP_ID="${configData?.authStatus?.tppId || 'TPP-WU-8890-EU'}"
 WESTERN_UNION_CLIENT_ID="${configData?.authStatus?.clientId || 'wu_client_3840294820'}"
-WESTERN_UNION_CLIENT_SECRET=""
+WESTERN_UNION_CLIENT_SECRET="••••••••"
 WESTERN_UNION_ORGANIZATION_ID="${configData?.authStatus?.organizationId || 'PSDDE-BAFIN-12345678'}"
 WESTERN_UNION_ORGANIZATION_NAME="${configData?.authStatus?.organizationName || 'Western Union FinTech Solutions'}"
 WESTERN_UNION_COUNTRY="${configData?.authStatus?.country || 'AT'}"

@@ -9,7 +9,6 @@ import {
   EyeOff,
   Copy,
   Check,
-  Download,
   Upload,
   RefreshCw,
   Sparkles,
@@ -121,16 +120,6 @@ export function EnvironmentVariablesManager() {
     navigator.clipboard.writeText(text);
     setCopiedKey(label);
     setTimeout(() => setCopiedKey(null), 2000);
-  };
-
-  const handleDownloadEnv = () => {
-    const blob = new Blob([rawEnvText], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = '.env';
-    link.click();
-    URL.revokeObjectURL(url);
   };
 
   const handleParseAndImport = async () => {
@@ -309,14 +298,13 @@ export function EnvironmentVariablesManager() {
               <span>Copy .env</span>
             </button>
 
-            <button
-              onClick={handleDownloadEnv}
-              className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
-              title="Download .env file"
+            <div
+              className="px-3.5 py-2.5 bg-slate-800/80 text-amber-300/90 text-xs font-semibold rounded-xl border border-amber-500/30 flex items-center gap-1.5 cursor-not-allowed select-none shadow-xs"
+              title="Environment variable file downloading is locked by security policy to prevent exfiltration of server secrets."
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download .env</span>
-            </button>
+              <Lock className="w-3.5 h-3.5 text-amber-400" />
+              <span>Downloads Protected</span>
+            </div>
 
             <button
               onClick={() => setImportModalOpen(true)}
@@ -335,6 +323,30 @@ export function EnvironmentVariablesManager() {
               <span>Save & Apply</span>
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Security Status Shield Banner */}
+      <div className="bg-slate-900/90 border border-emerald-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+            <Shield className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-white flex items-center gap-2">
+              Credential Exfiltration Protection Active
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800">
+                LOCKED
+              </span>
+            </h4>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Direct `.env` file downloads and plain-text dumping of private keys, OTPs, and master secrets are permanently disabled to guarantee runtime credential integrity.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shrink-0">
+          <Lock className="w-3 h-3 text-amber-400" />
+          <span>ENCRYPTED_MEMORY_ONLY</span>
         </div>
       </div>
 
