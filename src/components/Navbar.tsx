@@ -1,8 +1,8 @@
 import React from 'react';
-import { Shield, Key, CheckCircle2, AlertCircle, RefreshCw, Code2, PlayCircle, BookOpen, Sparkles, Plus, Terminal, Layers, Zap, CreditCard, Lock } from 'lucide-react';
+import { Shield, Key, CheckCircle2, AlertCircle, RefreshCw, Code2, PlayCircle, BookOpen, Sparkles, Plus, Terminal, Layers, Zap, CreditCard, Lock, Building2 } from 'lucide-react';
 import { IntuitConfig } from '../types';
 
-export type MainTabType = 'runner' | 'auto-bridge' | 'bridge' | 'chase' | 'finicity' | 'ai-ingest' | 'forms' | 'curl' | 'autonomous' | 'scaffolder' | 'scopes' | 'portal' | 'docs-hub';
+export type MainTabType = 'runner' | 'auto-bridge' | 'bridge' | 'moderntreasury' | 'chase' | 'finicity' | 'ai-ingest' | 'forms' | 'curl' | 'autonomous' | 'scaffolder' | 'scopes' | 'portal' | 'docs-hub';
 
 interface NavbarProps {
   activeTab: MainTabType;
@@ -83,6 +83,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Zap className="w-3.5 h-3.5 text-emerald-400" />
               <span>Command Bridge</span>
               <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-bold">PRO</span>
+            </button>
+
+            <button
+              id="tab-moderntreasury-btn"
+              onClick={() => setActiveTab('moderntreasury')}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                activeTab === 'moderntreasury'
+                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-xs border border-indigo-400 font-semibold'
+                  : 'text-indigo-300 hover:text-white bg-indigo-950/40 border border-indigo-500/30'
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Modern Treasury</span>
+              <span className="px-1.5 py-0.2 rounded text-[10px] bg-indigo-500/20 text-indigo-300 font-bold">LEDGERS</span>
             </button>
 
             <button
@@ -267,6 +281,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {[
             { id: 'auto-bridge', label: '🔒 Auto QBO Bridge', highlight: true },
             { id: 'portal', label: '🔑 Dev Portal & Tokens', highlight: true },
+            { id: 'moderntreasury', label: '🏛️ Modern Treasury Ledgers', highlight: true },
             { id: 'bridge', label: '⚡ Command Bridge' },
             { id: 'chase', label: '💳 Chase Loyalty' },
             { id: 'finicity', label: '🏦 Mastercard / Finicity' },

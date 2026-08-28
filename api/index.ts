@@ -9,6 +9,7 @@ import { chaseApiRouter } from './chase-api.js';
 import { finicityApiRouter } from './finicity-api.js';
 import { envManagerRouter } from './env-manager.js';
 import { bridgeRouter } from './intuit/bridge-router.js';
+import { modernTreasuryApiRouter } from './modern-treasury-api.js';
 
 dotenv.config();
 
@@ -2331,6 +2332,10 @@ app.use('/api/intuit/suite', qboFullSuiteRouter);
 app.use('/intuit/suite', qboFullSuiteRouter);
 app.use('/api/bridge', bridgeRouter);
 app.use('/bridge', bridgeRouter);
+
+app.use('/api/moderntreasury', modernTreasuryApiRouter);
+app.use('/moderntreasury', modernTreasuryApiRouter);
+app.use('/api/modern-treasury', modernTreasuryApiRouter);
 
 // Mount router on multiple sub-paths to guarantee matching under any Vercel/Vite rewrite configuration
 app.use('/api/intuit', intuitRouter);

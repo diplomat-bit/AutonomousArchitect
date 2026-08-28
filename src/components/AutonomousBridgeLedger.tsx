@@ -27,8 +27,8 @@ import { apiFetch } from '../utils/apiClient';
 
 export interface QuickBooksLinkedRecord {
   bridgeId: string;
-  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST';
-  action: 'AUTHENTICATION' | 'ACCOUNT_AGGREGATION' | 'TRANSACTION_SYNC' | 'REWARDS_REDEMPTION' | 'CONNECT_GENERATE' | 'BALANCE_CHECK';
+  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST' | 'MODERN_TREASURY';
+  action: 'AUTHENTICATION' | 'ACCOUNT_AGGREGATION' | 'TRANSACTION_SYNC' | 'REWARDS_REDEMPTION' | 'CONNECT_GENERATE' | 'BALANCE_CHECK' | 'BATCH_IMPORT' | 'LEDGER_LIST' | 'LEDGER_SYNC' | 'LEDGER_CREATE';
   realmId: string | null;
   qboAccountRef?: {
     id?: string;
@@ -87,7 +87,7 @@ export const AutonomousBridgeLedger: React.FC<AutonomousBridgeLedgerProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<QuickBooksLinkedRecord | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [filterSource, setFilterSource] = useState<'ALL' | 'CHASE' | 'MASTERCARD'>('ALL');
+  const [filterSource, setFilterSource] = useState<'ALL' | 'CHASE' | 'MASTERCARD' | 'MODERN_TREASURY'>('ALL');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [isSimulating, setIsSimulating] = useState(false);
 
@@ -123,7 +123,7 @@ export const AutonomousBridgeLedger: React.FC<AutonomousBridgeLedgerProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleManualSync = async (source: 'CHASE_OPEN_BANKING' | 'MASTERCARD_OPEN_FINANCE') => {
+  const handleManualSync = async (source: 'CHASE_OPEN_BANKING' | 'MASTERCARD_OPEN_FINANCE' | 'MODERN_TREASURY') => {
     try {
       setIsSimulating(true);
       if (source === 'CHASE_OPEN_BANKING') {
@@ -132,7 +132,7 @@ export const AutonomousBridgeLedger: React.FC<AutonomousBridgeLedgerProps> = ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: 'USER-CHASE-009' }),
         });
-      } else {
+      } else if (source === 'MASTERCARD_OPEN_FINANCE') {
         await apiFetch('/api/finicity/execute-all', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -140,6 +140,10 @@ export const AutonomousBridgeLedger: React.FC<AutonomousBridgeLedgerProps> = ({
             partnerId: '2423653942467',
             customerId: '1005061234',
           }),
+        });
+      } else if (source === 'MODERN_TREASURY') {
+        await apiFetch('/api/moderntreasury/sync-all-to-qbo', {
+          method: 'POST',
         });
       }
       await fetchRecords();
@@ -163,6 +167,7 @@ export const AutonomousBridgeLedger: React.FC<AutonomousBridgeLedgerProps> = ({
   const filteredRecords = records.filter((r) => {
     if (filterSource === 'CHASE') return r.source === 'CHASE_OPEN_BANKING';
     if (filterSource === 'MASTERCARD') return r.source === 'MASTERCARD_OPEN_FINANCE';
+    if (filterSource === 'MODERN_TREASURY') return r.source === 'MODERN_TREASURY';
     return true;
   });
 

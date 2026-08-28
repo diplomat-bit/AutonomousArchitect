@@ -5,7 +5,7 @@ export const envManagerRouter = Router();
 
 export interface EnvVariableItem {
   key: string;
-  category: 'google' | 'gemini' | 'finicity' | 'chase' | 'intuit' | 'security';
+  category: 'google' | 'gemini' | 'finicity' | 'chase' | 'intuit' | 'moderntreasury' | 'security';
   categoryLabel: string;
   description: string;
   value: string;
@@ -318,7 +318,50 @@ export function getAllEnvironmentVariables(): EnvVariableItem[] {
       defaultValue: 'sandbox',
     },
 
-    // 6. Security & Master API Key
+    // 6. Modern Treasury Open Banking & Ledger
+    {
+      key: 'MODERN_TREASURY_ORGANIZATION_ID',
+      category: 'moderntreasury',
+      categoryLabel: 'Modern Treasury Ledgers & Banking',
+      description: 'Modern Treasury Organization Identifier for Basic Auth',
+      value: process.env.MODERN_TREASURY_ORGANIZATION_ID || '',
+      isSecret: false,
+      isSet: Boolean(process.env.MODERN_TREASURY_ORGANIZATION_ID),
+      maskedValue: process.env.MODERN_TREASURY_ORGANIZATION_ID || 'Not Set',
+    },
+    {
+      key: 'MODERN_TREASURY_API_KEY',
+      category: 'moderntreasury',
+      categoryLabel: 'Modern Treasury Ledgers & Banking',
+      description: 'Modern Treasury Secret API Key for programmatic REST access',
+      value: process.env.MODERN_TREASURY_API_KEY || '',
+      isSecret: true,
+      isSet: Boolean(process.env.MODERN_TREASURY_API_KEY),
+      maskedValue: maskSecret(process.env.MODERN_TREASURY_API_KEY || ''),
+    },
+    {
+      key: 'MODERN_TREASURY_AUTHORIZATION',
+      category: 'moderntreasury',
+      categoryLabel: 'Modern Treasury Ledgers & Banking',
+      description: 'Explicit Basic Authorization header (Basic <base64>)',
+      value: process.env.MODERN_TREASURY_AUTHORIZATION || '',
+      isSecret: true,
+      isSet: Boolean(process.env.MODERN_TREASURY_AUTHORIZATION),
+      maskedValue: maskSecret(process.env.MODERN_TREASURY_AUTHORIZATION || ''),
+    },
+    {
+      key: 'MODERN_TREASURY_BASE_URL',
+      category: 'moderntreasury',
+      categoryLabel: 'Modern Treasury Ledgers & Banking',
+      description: 'Modern Treasury API Base Endpoint',
+      value: process.env.MODERN_TREASURY_BASE_URL || 'https://app.moderntreasury.com',
+      isSecret: false,
+      isSet: Boolean(process.env.MODERN_TREASURY_BASE_URL),
+      maskedValue: process.env.MODERN_TREASURY_BASE_URL || 'https://app.moderntreasury.com',
+      defaultValue: 'https://app.moderntreasury.com',
+    },
+
+    // 7. Security & Master API Key
     {
       key: 'MASTER_API_KEY',
       category: 'security',
@@ -340,7 +383,8 @@ export function generateFullEnvFile(): string {
     { id: 'finicity', title: '3. Mastercard Open Finance / Finicity' },
     { id: 'chase', title: '4. Chase Open Banking & Loyalty Rewards' },
     { id: 'intuit', title: '5. Intuit QuickBooks Online OAuth 2.0' },
-    { id: 'security', title: '6. Security & Master API Key' },
+    { id: 'moderntreasury', title: '6. Modern Treasury Ledgers & Banking' },
+    { id: 'security', title: '7. Security & Master API Key' },
   ];
 
   let output = `# ==============================================================================

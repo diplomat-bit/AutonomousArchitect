@@ -1,10 +1,11 @@
 import crypto from 'crypto';
 import { activeTokens } from '../index.js';
+import { mockStore } from './qbo-full-suite.js';
 
 export interface QuickBooksLinkedRecord {
   bridgeId: string;
-  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST';
-  action: 'AUTHENTICATION' | 'ACCOUNT_AGGREGATION' | 'TRANSACTION_SYNC' | 'REWARDS_REDEMPTION' | 'CONNECT_GENERATE' | 'BALANCE_CHECK' | 'BATCH_IMPORT';
+  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST' | 'MODERN_TREASURY';
+  action: 'AUTHENTICATION' | 'ACCOUNT_AGGREGATION' | 'TRANSACTION_SYNC' | 'REWARDS_REDEMPTION' | 'CONNECT_GENERATE' | 'BALANCE_CHECK' | 'BATCH_IMPORT' | 'LEDGER_LIST' | 'LEDGER_SYNC' | 'LEDGER_CREATE';
   realmId: string | null;
   qboAccountRef?: {
     id?: string;
@@ -18,7 +19,9 @@ export interface QuickBooksLinkedRecord {
   amount?: number;
   currency?: string;
   timestamp: string;
-  status: 'LOCKED_INTO_QUICKBOOKS' | 'SYNCED_WITH_METADATA' | 'PROVISIONED_AUTONOMOUSLY';
+  status: 'REAL_QBO_SYNCED' | 'QUICKBOOKS_NOT_CONNECTED' | 'QBO_API_ERROR' | 'LOCKED_INTO_QUICKBOOKS' | 'SYNCED_WITH_METADATA' | 'PROVISIONED_AUTONOMOUSLY';
+  qboError?: string;
+  isRealQboSync?: boolean;
   technicalMetadata: {
     telemetryEpoch: number;
     isoTimestamp: string;
@@ -57,7 +60,7 @@ export const quickbooksBridgeLedger: QuickBooksLinkedRecord[] = [];
  * Generate deep technical metadata for financial locking
  */
 export function generateInsaneTechnicalMetadata(params: {
-  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST';
+  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST' | 'MODERN_TREASURY';
   action: string;
   externalId: string;
   payload: any;
@@ -73,7 +76,7 @@ export function generateInsaneTechnicalMetadata(params: {
     .update(`${params.source}:${params.action}:${params.externalId}:${epoch}`)
     .digest('hex');
 
-  const traceId = params.payload?.traceId || params.payload?.interactionId || `TRC-SOV-${epoch}-${Math.floor(Math.random() * 100000)}`;
+  const traceId = params.payload?.traceId || params.payload?.interactionId || `TRC-MT-${epoch}-${Math.floor(Math.random() * 100000)}`;
 
   let debitAccount = '1010 Operating Cash / Asset Clearing';
   let creditAccount = '2010 Open Finance Intercompany Settlement';
@@ -87,6 +90,10 @@ export function generateInsaneTechnicalMetadata(params: {
     debitAccount = '1030 Mastercard Open Finance Aggregated Accounts';
     creditAccount = '2020 Finicity Direct Feed Intermediary';
     chartOfAccountsCategory = 'Asset';
+  } else if (params.source === 'MODERN_TREASURY') {
+    debitAccount = '1040 Modern Treasury Digital Wallet GL';
+    creditAccount = '2040 Modern Treasury Funds Clearing';
+    chartOfAccountsCategory = 'Bank / Asset';
   }
 
   return {
@@ -119,11 +126,11 @@ export function generateInsaneTechnicalMetadata(params: {
 }
 
 /**
- * Automatically locks a call from Chase or Mastercard into QuickBooks Online
+ * Automatically locks a call from Chase, Mastercard, or Modern Treasury into QuickBooks Online
  */
 export async function lockCallIntoQuickBooks(params: {
-  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST';
-  action: 'AUTHENTICATION' | 'ACCOUNT_AGGREGATION' | 'TRANSACTION_SYNC' | 'REWARDS_REDEMPTION' | 'CONNECT_GENERATE' | 'BALANCE_CHECK' | 'BATCH_IMPORT';
+  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST' | 'MODERN_TREASURY';
+  action: 'AUTHENTICATION' | 'ACCOUNT_AGGREGATION' | 'TRANSACTION_SYNC' | 'REWARDS_REDEMPTION' | 'CONNECT_GENERATE' | 'BALANCE_CHECK' | 'BATCH_IMPORT' | 'LEDGER_LIST' | 'LEDGER_SYNC' | 'LEDGER_CREATE';
   externalEntityId: string;
   amount?: number;
   currency?: string;
@@ -131,31 +138,35 @@ export async function lockCallIntoQuickBooks(params: {
   payload: any;
   qboLinkedEntityType?: 'Account' | 'JournalEntry' | 'Purchase' | 'Deposit' | 'Payment' | 'Customer' | 'Transfer';
 }): Promise<QuickBooksLinkedRecord> {
-  const currentRealm = activeTokens.realmId || process.env.QUICKBOOKS_REALM_ID || '9341453267972001';
+  const qboAccessToken = activeTokens.accessToken || process.env.QUICKBOOKS_ACCESS_TOKEN || process.env.INTUIT_ACCESS_TOKEN;
+  const currentRealm = activeTokens.realmId || process.env.QUICKBOOKS_REALM_ID || process.env.INTUIT_REALM_ID || process.env.QBO_REALM_ID || null;
+  const env = (process.env.QUICKBOOKS_ENVIRONMENT || process.env.INTUIT_ENVIRONMENT || 'sandbox').toLowerCase();
+  const qboBaseUrl = env === 'production' ? 'https://quickbooks.api.intuit.com' : 'https://sandbox-quickbooks.api.intuit.com';
+
   const metadata = generateInsaneTechnicalMetadata({
     source: params.source,
     action: params.action,
     externalId: params.externalEntityId,
     payload: params.payload,
-    realmId: currentRealm,
+    realmId: currentRealm || '9341453267972001',
     amount: params.amount,
   });
 
   const bridgeId = `QBO-BRIDGE-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
-  const qboEntityId = `QBO-ENTITY-${params.source.slice(0, 4)}-${Math.floor(100000 + Math.random() * 900000)}`;
 
   const record: QuickBooksLinkedRecord = {
     bridgeId,
     source: params.source,
     action: params.action,
     realmId: currentRealm,
-    qboLinkedEntityType: params.qboLinkedEntityType || 'JournalEntry',
-    qboEntityId,
+    qboLinkedEntityType: params.qboLinkedEntityType || 'Account',
+    qboEntityId: qboAccessToken ? 'PENDING_QBO_SYNC' : 'NOT_CONNECTED',
     externalEntityId: params.externalEntityId,
     amount: params.amount || (params.payload?.balance !== undefined ? Number(params.payload.balance) : params.payload?.amount !== undefined ? Number(params.payload.amount) : 0),
     currency: params.currency || params.payload?.currency || 'USD',
     timestamp: new Date().toISOString(),
-    status: 'LOCKED_INTO_QUICKBOOKS',
+    status: qboAccessToken ? 'LOCKED_INTO_QUICKBOOKS' : 'QUICKBOOKS_NOT_CONNECTED',
+    qboError: qboAccessToken ? undefined : 'No active QuickBooks OAuth connection or access token. Connect QuickBooks via OAuth to push to live Chart of Accounts.',
     technicalMetadata: metadata,
     summary: params.summary,
     rawPayload: params.payload,
@@ -173,28 +184,73 @@ export async function lockCallIntoQuickBooks(params: {
     quickbooksBridgeLedger.pop();
   }
 
-  // Attempt live push to QuickBooks Online if active access token is present
-  if (activeTokens.accessToken && currentRealm) {
+  // Attempt live push to QuickBooks Online API if access token and realmId exist
+  if (qboAccessToken && currentRealm) {
     try {
-      if (params.qboLinkedEntityType === 'Account') {
-        await fetch(`https://sandbox-quickbooks.api.intuit.com/v3/company/${currentRealm}/account?minorversion=75`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${activeTokens.accessToken}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            Name: `${params.summary.slice(0, 80)} (${record.bridgeId.slice(-6)})`,
-            AccountType: 'Bank',
-            AccountSubType: 'Checking',
-            Description: `Locked via AI Banking Bridge: ${metadata.cryptographicHmacSignature}`,
-          }),
-        }).catch(() => {});
+      const qboAccountName = params.summary && !params.summary.includes('Sync:')
+        ? params.summary
+        : `Citi Account #${params.externalEntityId}`;
+
+      const qboRes = await fetch(`${qboBaseUrl}/v3/company/${currentRealm}/account?minorversion=75`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${qboAccessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          Name: qboAccountName.slice(0, 100),
+          AccountType: 'Bank',
+          AccountSubType: 'Checking',
+          AcctNum: String(params.externalEntityId).slice(0, 30),
+          Description: `CitiBusiness Account #${params.externalEntityId} - Synchronized via Modern Treasury Bridge`,
+        }),
+      });
+
+      const qboText = await qboRes.text();
+      let qboJson: any = null;
+      try {
+        qboJson = JSON.parse(qboText);
+      } catch (e) {}
+
+      if (qboRes.ok && qboJson?.Account?.Id) {
+        record.status = 'REAL_QBO_SYNCED';
+        record.qboEntityId = String(qboJson.Account.Id);
+        record.isRealQboSync = true;
+        record.qboError = undefined;
+
+        mockStore.accounts.push(qboJson.Account);
+      } else {
+        const errorDetail =
+          qboJson?.Fault?.Error?.[0]?.Detail ||
+          qboJson?.Fault?.Error?.[0]?.Message ||
+          `QuickBooks API HTTP ${qboRes.status}: ${qboText.slice(0, 200)}`;
+        
+        record.status = 'QBO_API_ERROR';
+        record.qboEntityId = 'SYNC_FAILED';
+        record.qboError = errorDetail;
+        console.error(`[QBO API ERROR] Account ${params.externalEntityId}:`, errorDetail);
       }
-    } catch (e) {
-      // continue autonomously
+    } catch (e: any) {
+      record.status = 'QBO_API_ERROR';
+      record.qboEntityId = 'SYNC_FAILED';
+      record.qboError = e.message || 'Network error pushing to QuickBooks Online API';
+      console.error('[QBO Push Network Error]:', e);
     }
+  } else {
+    // Save to local fallback store only, with clear NOT_CONNECTED marker
+    mockStore.accounts.push({
+      Id: `LOCAL-${params.externalEntityId}`,
+      Name: `Citi Account #${params.externalEntityId}`,
+      AccountType: 'Bank',
+      AccountSubType: 'Checking',
+      AcctNum: params.externalEntityId,
+      Description: `Local Bridge Staging Account (Connect QuickBooks to push to live QBO)`,
+      BridgeId: bridgeId,
+      Source: params.source,
+      Active: true,
+      MetaData: { CreateTime: new Date().toISOString() }
+    });
   }
 
   return record;

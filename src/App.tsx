@@ -16,6 +16,7 @@ import DocumentationHub from './components/DocumentationHub';
 import { CustomCurlExecutor } from './components/CustomCurlExecutor';
 import ChaseLoyaltyConsole from './components/ChaseLoyaltyConsole';
 import { FinicityConsole } from './components/FinicityConsole';
+import { ModernTreasuryConsole } from './components/ModernTreasuryConsole';
 import { AutonomousBridgeLedger } from './components/AutonomousBridgeLedger';
 import { IntuitConfig, TokenResponse } from './types';
 import { apiFetch } from './utils/apiClient';
@@ -343,6 +344,18 @@ export default function App() {
         {activeTab === 'finicity' && (
           <div id="section-finicity-open-finance">
             <FinicityConsole
+              onSendToAiIngest={(rawJson) => {
+                setIngestPayload(rawJson);
+                setActiveTab('ai-ingest');
+              }}
+            />
+          </div>
+        )}
+
+        {/* Tab: Modern Treasury Ledgers & Live QBO Storage */}
+        {activeTab === 'moderntreasury' && (
+          <div id="section-modern-treasury-ledgers">
+            <ModernTreasuryConsole
               onSendToAiIngest={(rawJson) => {
                 setIngestPayload(rawJson);
                 setActiveTab('ai-ingest');

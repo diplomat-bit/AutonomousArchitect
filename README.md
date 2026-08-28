@@ -4,6 +4,7 @@
 [![QuickBooks Online](https://img.shields.io/badge/QuickBooks-Accounting%20v3%20%7C%20Payments%20v4-2CA01C?logo=quickbooks&logoColor=white)](https://developer.intuit.com/)
 [![Mastercard Open Finance](https://img.shields.io/badge/Mastercard-Open%20Finance%20%7C%20Finicity%20v2%2Fv3-EB001B?logo=mastercard&logoColor=white)](https://developer.mastercard.com/)
 [![Mastercard Developers API](https://img.shields.io/badge/Mastercard%20Developers-Project%20%26%20Key%20Lifecycle-FFA000?logo=mastercard&logoColor=white)](https://developer.mastercard.com/)
+[![Modern Treasury](https://img.shields.io/badge/Modern%20Treasury-Ledgers%20API%20v1-1A1F2C?logo=moderntreasury&logoColor=white)](https://app.moderntreasury.com/)
 [![Chase Loyalty](https://img.shields.io/badge/Chase-Pay%20With%20Points%20%7C%20Open%20Banking-117ACA?logo=chase&logoColor=white)](https://developer.chase.com/)
 [![Gemini 3.7 Flash](https://img.shields.io/badge/AI%20Engine-Gemini%203.7%20Flash-8E75B2?logo=google&logoColor=white)](https://ai.google.dev/)
 [![Cloud Firestore](https://img.shields.io/badge/Persistence-Cloud%20Firestore-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)
@@ -497,6 +498,17 @@ Content-Type: application/json
 
 ---
 
+## 🏛️ 6. Modern Treasury Ledgers API & Live QuickBooks Storage
+
+- **List Ledgers (`GET /api/ledgers`)**:
+  - Full support for query parameters: `per_page`, `id[]` (bulk UUID filtering), `metadata[key]=value`, `updated_at[gt|gte|lt|lte|eq]`, and `after_cursor` pagination.
+- **Dynamic Basic Authorization**:
+  - Computes `Basic <base64(MODERN_TREASURY_ORGANIZATION_ID:MODERN_TREASURY_API_KEY)>` or accepts explicit `MODERN_TREASURY_AUTHORIZATION` header.
+- **Autonomous QuickBooks Storage**:
+  - Every ledger retrieved or created is locked into the QuickBooks Command Bridge Ledger with deterministic HMAC-SHA384 proofs and mapped into the Chart of Accounts (`1040 Modern Treasury Digital Wallet GL`).
+
+---
+
 ## 🔑 Environment Configuration
 
 Create a `.env` file in the root directory (refer to `.env.example`):
@@ -511,6 +523,12 @@ INTUIT_CLIENT_ID=""
 INTUIT_CLIENT_SECRET=""
 INTUIT_REDIRECT_URI="https://developer.intuit.com/app/developer/quickstart"
 INTUIT_ENVIRONMENT="sandbox"
+
+# Modern Treasury Ledgers & Banking
+MODERN_TREASURY_ORGANIZATION_ID=""
+MODERN_TREASURY_API_KEY=""
+MODERN_TREASURY_AUTHORIZATION=""
+MODERN_TREASURY_BASE_URL="https://app.moderntreasury.com"
 
 # Mastercard Open Finance (Finicity)
 FINICITY_APP_KEY="555617add4733a9befefa2560cdcfb71"

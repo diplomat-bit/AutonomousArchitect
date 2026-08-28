@@ -4,7 +4,7 @@ import { getActiveGoogleHmacKey, generateGoogleHmacAuthHeader } from '../google-
 export const qboFullSuiteRouter = Router();
 
 // Full CRUD for Invoices, Customers, Payments, Estimates, Accounts, Bills
-const mockStore: Record<string, any[]> = {
+export const mockStore: Record<string, any[]> = {
   accounts: [],
   invoices: [],
   customers: [],

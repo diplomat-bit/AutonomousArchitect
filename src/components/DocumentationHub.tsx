@@ -22,12 +22,14 @@ import {
   FileText,
   DollarSign,
   CreditCard,
+  Building2,
 } from 'lucide-react';
 
 export default function DocumentationHub() {
   const [selectedDoc, setSelectedDoc] = useState<
     | 'finicity'
     | 'mastercard_mgmt'
+    | 'moderntreasury'
     | 'bridge_batch'
     | 'overview'
     | 'auth'
@@ -59,8 +61,9 @@ export default function DocumentationHub() {
 
   const docCategories = [
     {
-      title: 'Mastercard & Chase Open Banking',
+      title: 'Mastercard, Chase & Modern Treasury Open Banking',
       items: [
+        { id: 'moderntreasury', label: 'Modern Treasury Ledgers API & QBO Sync', icon: Building2 },
         { id: 'finicity', label: 'Mastercard Open Finance (Finicity)', icon: Layers },
         { id: 'mastercard_mgmt', label: 'Mastercard Developers Project API', icon: Cpu },
         { id: 'chase', label: 'Chase Loyalty & Pay With Points', icon: CreditCard },
@@ -167,6 +170,79 @@ export default function DocumentationHub() {
 
       {/* Right Content Area */}
       <div className="lg:col-span-9 bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:p-8 space-y-6 overflow-y-auto max-h-[800px]">
+        {selectedDoc === 'moderntreasury' && (
+          <div className="space-y-6">
+            <div className="border-b border-slate-800 pb-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs bg-indigo-500/20 text-indigo-300 font-mono px-2.5 py-1 rounded border border-indigo-500/30">
+                  Modern Treasury Open Finance
+                </span>
+                <span className="text-xs bg-cyan-500/20 text-cyan-300 font-mono px-2.5 py-1 rounded border border-cyan-500/30">
+                  Ledgers API v1
+                </span>
+                <span className="text-xs bg-emerald-500/20 text-emerald-300 font-mono px-2.5 py-1 rounded border border-emerald-500/30">
+                  Auto QBO Storage
+                </span>
+              </div>
+              <h2 className="text-2xl font-bold text-white tracking-tight">Modern Treasury: List Ledgers & Synchronize</h2>
+              <p className="text-slate-400 text-sm">
+                Complete documentation for querying Modern Treasury Ledgers with parameters (<code className="text-indigo-300">id[]</code>, <code className="text-indigo-300">metadata</code>, <code className="text-indigo-300">updated_at</code>, <code className="text-indigo-300">after_cursor</code>, <code className="text-indigo-300">per_page</code>) and persisting all transactions into QuickBooks Online Chart of Accounts and Journal Entries.
+              </p>
+            </div>
+
+            {/* Step 1: Query Ledgers */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-indigo-400" />
+                <span>1. GET /api/ledgers (List Ledgers)</span>
+              </h3>
+
+              <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-indigo-500/20 text-indigo-400 font-bold font-mono px-2 py-0.5 rounded text-xs">GET</span>
+                    <span className="text-white font-bold text-sm">https://app.moderntreasury.com/api/ledgers</span>
+                  </div>
+                  <button onClick={() => copyCode(`curl -X GET "https://app.moderntreasury.com/api/ledgers?per_page=25" \\\n  -H "Accept: application/json" \\\n  -H "Authorization: Basic <base64(org_id:api_key)>"`)} className="text-slate-400 hover:text-white text-xs flex items-center gap-1 font-mono">
+                    <Copy className="w-3.5 h-3.5" /> Copy cURL
+                  </button>
+                </div>
+                <p className="text-slate-400 text-xs">Retrieves paginated ledgers with optional bulk ID filtering and metadata search.</p>
+                <pre className="p-3 bg-slate-900 rounded-lg text-xs font-mono text-cyan-300 overflow-x-auto">
+{`curl -X GET "https://app.moderntreasury.com/api/ledgers?per_page=25&metadata[Type]=Loan" \\
+  -H "Accept: application/json" \\
+  -H "Authorization: Basic <base64(org_id:api_key)>"`}
+                </pre>
+              </div>
+
+              {/* Environment Variables Guide */}
+              <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+                <h4 className="text-white font-bold text-sm">2. Modern Treasury Environment Variables</h4>
+                <p className="text-slate-400 text-xs">Configure these environment variables in your workspace or .env file:</p>
+                <pre className="p-3 bg-slate-900 rounded-lg text-xs font-mono text-emerald-400 overflow-x-auto">
+{`MODERN_TREASURY_ORGANIZATION_ID="your_org_id_here"
+MODERN_TREASURY_API_KEY="your_secret_api_key_here"
+MODERN_TREASURY_AUTHORIZATION="Basic <base64_encoded_credentials>"
+MODERN_TREASURY_BASE_URL="https://app.moderntreasury.com"`}
+                </pre>
+              </div>
+
+              {/* QuickBooks Bridge Storage */}
+              <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+                <h4 className="text-white font-bold text-sm">3. Automatic QuickBooks Ledger Storage</h4>
+                <p className="text-slate-400 text-xs">
+                  Every time <code className="text-indigo-300">GET /api/moderntreasury/ledgers</code> or <code className="text-indigo-300">POST /api/moderntreasury/ledgers</code> is called with <code className="text-emerald-300">autoStoreQbo=true</code>, the bridge creates:
+                </p>
+                <ul className="list-disc list-inside text-xs text-slate-300 space-y-1 pl-2">
+                  <li>Deterministic HMAC-SHA384 record signature and GL mapping.</li>
+                  <li>QuickBooks Chart of Accounts Account (`1040 Modern Treasury Digital Wallet GL`).</li>
+                  <li>Immutable Audit Trail in the QuickBooks Command Bridge.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
         {selectedDoc === 'finicity' && (
           <div className="space-y-6">
             <div className="border-b border-slate-800 pb-4 space-y-2">
