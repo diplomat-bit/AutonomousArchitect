@@ -5,8 +5,7 @@ import multer from 'multer';
 import * as pdfParseModule from 'pdf-parse';
 const parsePdf = (pdfParseModule as any).default || pdfParseModule;
 import { activeTokens } from './index.js';
-import { lockCallIntoQuickBooks, quickbooksBridgeLedger } from './intuit/quickbooks-bridge.js';
-import { mockStore } from './intuit/qbo-full-suite.js';
+import { lockCallIntoQuickBooks, quickbooksBridgeLedger, mockStore } from './intuit-api.js';
 
 const upload = multer({ storage: multer.memoryStorage() });
 

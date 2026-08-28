@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { lockCallIntoQuickBooks } from './intuit/quickbooks-bridge';
+import { lockCallIntoQuickBooks } from './intuit-api.js';
 
 export const finicityApiRouter = Router();
 

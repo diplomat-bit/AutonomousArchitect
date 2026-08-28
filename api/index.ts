@@ -1,14 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
-import { universalIngestRouter } from './intuit/universal-ingest.js';
-import { qboFullSuiteRouter } from './intuit/qbo-full-suite.js';
+import { universalIngestRouter, qboFullSuiteRouter, bridgeRouter } from './intuit-api.js';
 import { authKeysRouter, requireApiKeyOrTrack } from './auth-keys.js';
 import { googleServiceKeyRouter } from './google-service-key.js';
 import { chaseApiRouter } from './chase-api.js';
 import { finicityApiRouter } from './finicity-api.js';
 import { envManagerRouter } from './env-manager.js';
-import { bridgeRouter } from './intuit/bridge-router.js';
 import { modernTreasuryApiRouter, syncQboAccountsToModernTreasury } from './modern-treasury-api.js';
 import { paypalApiRouter } from './paypal-api.js';
 import { aiProcureRouter } from './ai-procure-api.js';

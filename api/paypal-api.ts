@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { lockCallIntoQuickBooks } from './intuit/quickbooks-bridge.js';
+import { lockCallIntoQuickBooks } from './intuit-api.js';
 
 export const paypalApiRouter = Router();
 
