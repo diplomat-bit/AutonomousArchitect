@@ -18,9 +18,12 @@ import ChaseLoyaltyConsole from './components/ChaseLoyaltyConsole';
 import { FinicityConsole } from './components/FinicityConsole';
 import { ModernTreasuryConsole } from './components/ModernTreasuryConsole';
 import { AutonomousBridgeLedger } from './components/AutonomousBridgeLedger';
+import PayPalConsole from './components/PayPalConsole';
+import { AiBuyerConsole } from './components/AiBuyerConsole';
+import { WesternUnionPsd2Console } from './components/WesternUnionPsd2Console';
 import { IntuitConfig, TokenResponse } from './types';
 import { apiFetch } from './utils/apiClient';
-import { CheckCircle2, ChevronRight, RefreshCw, Trash2, Shield, PlayCircle, Code2, BookOpen, Layers, Zap, Sparkles, Plus, Terminal, Key } from 'lucide-react';
+import { CheckCircle2, ChevronRight, RefreshCw, Trash2, Shield, PlayCircle, Code2, BookOpen, Layers, Zap, Sparkles, Plus, Terminal, Key, ShoppingCart, Globe } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<MainTabType>('runner');
@@ -116,6 +119,13 @@ export default function App() {
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
+              onClick={() => setActiveTab('ai-buyer')}
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-950/40 transition-all border border-emerald-400/40 cursor-pointer"
+            >
+              <ShoppingCart className="w-4 h-4 text-emerald-200" />
+              <span>AI Autonomous Buyer</span>
+            </button>
+            <button
               onClick={() => setActiveTab('portal')}
               className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-purple-900/30 transition-all border border-purple-400/40"
             >
@@ -146,7 +156,51 @@ export default function App() {
         </div>
 
         {/* Quick Launch Control Hub */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          <button
+            onClick={() => setActiveTab('ai-buyer')}
+            className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer ${
+              activeTab === 'ai-buyer'
+                ? 'bg-emerald-950/50 border-emerald-400 text-white shadow-sm ring-1 ring-emerald-400'
+                : 'bg-[#161B22] border-emerald-500/30 hover:border-emerald-400 text-[#C9D1D9]'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
+                <ShoppingCart className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] font-mono font-bold text-emerald-300 px-1.5 py-0.5 rounded bg-emerald-500/20">
+                BUY WITH AI
+              </span>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white">AI Buyer & Procure</p>
+              <p className="text-[11px] text-[#8B949E]">Autonomous Purchases & Ledger</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('wu-psd2')}
+            className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer ${
+              activeTab === 'wu-psd2'
+                ? 'bg-amber-950/50 border-amber-400 text-white shadow-sm ring-1 ring-amber-400'
+                : 'bg-[#161B22] border-amber-500/30 hover:border-amber-400 text-[#C9D1D9]'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
+                <Globe className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] font-mono font-bold text-amber-300 px-1.5 py-0.5 rounded bg-amber-500/20">
+                BERLIN GROUP
+              </span>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white">WU PSD2 Portal</p>
+              <p className="text-[11px] text-[#8B949E]">eIDAS QSEAL & Signatures</p>
+            </div>
+          </button>
+
           <button
             onClick={() => setActiveTab('portal')}
             className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 ${
@@ -235,6 +289,28 @@ export default function App() {
             </div>
           </button>
         </div>
+
+        {/* Tab: AI Autonomous Procurement Buyer */}
+        {activeTab === 'ai-buyer' && (
+          <div id="section-ai-procure-buyer">
+            <AiBuyerConsole
+              tokens={tokens}
+              realmId={realmId || config?.activeTokens.realmId || undefined}
+              onNavigateToBridge={() => setActiveTab('bridge')}
+            />
+          </div>
+        )}
+
+        {/* Tab: Western Union PSD2 Developer Portal & Open Banking Gateway */}
+        {activeTab === 'wu-psd2' && (
+          <div id="section-wu-psd2-portal">
+            <WesternUnionPsd2Console
+              tokens={tokens}
+              realmId={realmId || config?.activeTokens.realmId || undefined}
+              onNavigateToBridge={() => setActiveTab('bridge')}
+            />
+          </div>
+        )}
 
         {/* Tab: Automated QBO-Banking Bridge & Technical Linking Ledger */}
         {activeTab === 'auto-bridge' && (
@@ -330,6 +406,13 @@ export default function App() {
                 onTokensRefreshed={handleTokensRefreshed}
               />
             </div>
+          </div>
+        )}
+
+        {/* Tab: PayPal Sandbox & Credentials Hub */}
+        {activeTab === 'paypal' && (
+          <div id="section-paypal-credentials-hub">
+            <PayPalConsole />
           </div>
         )}
 

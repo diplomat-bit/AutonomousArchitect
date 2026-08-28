@@ -4,7 +4,7 @@ import { mockStore } from './qbo-full-suite.js';
 
 export interface QuickBooksLinkedRecord {
   bridgeId: string;
-  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST' | 'MODERN_TREASURY';
+  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST' | 'MODERN_TREASURY' | 'PAYPAL_PAYMENTS';
   action: 'AUTHENTICATION' | 'ACCOUNT_AGGREGATION' | 'TRANSACTION_SYNC' | 'REWARDS_REDEMPTION' | 'CONNECT_GENERATE' | 'BALANCE_CHECK' | 'BATCH_IMPORT' | 'LEDGER_LIST' | 'LEDGER_SYNC' | 'LEDGER_CREATE';
   realmId: string | null;
   qboAccountRef?: {
@@ -60,7 +60,7 @@ export const quickbooksBridgeLedger: QuickBooksLinkedRecord[] = [];
  * Generate deep technical metadata for financial locking
  */
 export function generateInsaneTechnicalMetadata(params: {
-  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST' | 'MODERN_TREASURY';
+  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST' | 'MODERN_TREASURY' | 'PAYPAL_PAYMENTS';
   action: string;
   externalId: string;
   payload: any;
@@ -129,7 +129,7 @@ export function generateInsaneTechnicalMetadata(params: {
  * Automatically locks a call from Chase, Mastercard, or Modern Treasury into QuickBooks Online
  */
 export async function lockCallIntoQuickBooks(params: {
-  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST' | 'MODERN_TREASURY';
+  source: 'MASTERCARD_OPEN_FINANCE' | 'CHASE_OPEN_BANKING' | 'UNIVERSAL_INGEST' | 'MODERN_TREASURY' | 'PAYPAL_PAYMENTS';
   action: 'AUTHENTICATION' | 'ACCOUNT_AGGREGATION' | 'TRANSACTION_SYNC' | 'REWARDS_REDEMPTION' | 'CONNECT_GENERATE' | 'BALANCE_CHECK' | 'BATCH_IMPORT' | 'LEDGER_LIST' | 'LEDGER_SYNC' | 'LEDGER_CREATE';
   externalEntityId: string;
   amount?: number;

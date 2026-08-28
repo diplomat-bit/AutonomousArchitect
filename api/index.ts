@@ -9,7 +9,10 @@ import { chaseApiRouter } from './chase-api.js';
 import { finicityApiRouter } from './finicity-api.js';
 import { envManagerRouter } from './env-manager.js';
 import { bridgeRouter } from './intuit/bridge-router.js';
-import { modernTreasuryApiRouter } from './modern-treasury-api.js';
+import { modernTreasuryApiRouter, syncQboAccountsToModernTreasury } from './modern-treasury-api.js';
+import { paypalApiRouter } from './paypal-api.js';
+import { aiProcureRouter } from './ai-procure-api.js';
+import { westernUnionPsd2Router } from './western-union-psd2.js';
 
 dotenv.config();
 
@@ -1578,14 +1581,13 @@ intuitRouter.post('/pull-all', async (req: Request, res: Response) => {
     const paymentsList = payments.data?.QueryResponse?.Payment || [];
     const salesReceiptsList = salesReceipts.data?.QueryResponse?.SalesReceipt || [];
 
-    // Extract Credit Cards and Bank Accounts from QBO Chart of Accounts
+    // Extract Credit Cards and Bank Accounts strictly from QBO Chart of Accounts
     accountsList.forEach((a: any) => {
       const type = (a.AccountType || '').toLowerCase();
       const subType = (a.AccountSubType || '').toLowerCase();
-      const name = (a.Name || '').toLowerCase();
 
-      const isCard = type.includes('credit') || subType.includes('creditcard') || name.includes('card') || name.includes('visa') || name.includes('mastercard') || name.includes('amex');
-      const isBank = type.includes('bank') || subType.includes('checking') || subType.includes('savings') || name.includes('checking') || name.includes('savings') || name.includes('bank');
+      const isCard = type === 'credit card' || type === 'creditcard' || subType === 'creditcard';
+      const isBank = type === 'bank' || subType === 'checking' || subType === 'savings' || subType === 'money market' || subType === 'cashonhand';
 
       if (isCard) {
         allCards.push({
@@ -1615,81 +1617,61 @@ intuitRouter.post('/pull-all', async (req: Request, res: Response) => {
       }
     });
 
-    // Fallback default cards & bank accounts if sandbox returned zero cards/bank accounts
-    if (allCards.length === 0) {
-      allCards.push(
-        {
-          id: 'card-citi-0019',
-          name: 'Costco Anywhere Visa® Card By Citi',
-          accountNumber: '0019',
-          cardType: 'CREDIT_CARD',
-          currentBalance: 7689.62,
-          description: 'Costco Anywhere Visa® Card By Citi-0019',
-          classification: 'Liability',
-          source: 'Citi Master Banking Ingestion',
-        },
-        {
-          id: 'card-citi-3250',
-          name: 'Citi ThankYou® Premier Card',
-          accountNumber: '3250',
-          cardType: 'CREDIT_CARD',
-          currentBalance: 2996.57,
-          description: 'Citi ThankYou® Premier Card-3250',
-          classification: 'Liability',
-          source: 'Citi Master Banking Ingestion',
-        }
-      );
-    }
+    // Deduplicate bank accounts and cards by ID
+    const uniqueBankAccountsMap = new Map<string, any>();
+    allBankAccounts.forEach(b => {
+      const bId = String(b.id || b.Id || b.accountNumber || b.AcctNum || '');
+      if (bId && !uniqueBankAccountsMap.has(bId)) {
+        uniqueBankAccountsMap.set(bId, b);
+      }
+    });
+    const uniqueBankAccounts = Array.from(uniqueBankAccountsMap.values());
 
-    if (allBankAccounts.length === 0) {
-      allBankAccounts.push(
-        {
-          id: 'bank-citi-1010',
-          name: 'Citi Business Operating Checking',
-          accountNumber: '1010',
-          accountType: 'Checking',
-          currentBalance: 8520.0,
-          description: 'Primary checking account for operating expenses',
-          classification: 'Asset',
-          source: 'Citi Master Banking Ingestion',
-        },
-        {
-          id: 'bank-citi-8543',
-          name: 'Citi Platinum Savings Account',
-          accountNumber: '8543',
-          accountType: 'Savings',
-          currentBalance: 5142.0,
-          description: 'High-yield reserve savings account',
-          classification: 'Asset',
-          source: 'Citi Master Banking Ingestion',
-        }
-      );
-    }
+    const uniqueCardsMap = new Map<string, any>();
+    allCards.forEach(c => {
+      const cId = String(c.id || c.Id || c.accountNumber || c.AcctNum || '');
+      if (cId && !uniqueCardsMap.has(cId)) {
+        uniqueCardsMap.set(cId, c);
+      }
+    });
+    const uniqueCards = Array.from(uniqueCardsMap.values());
+
+    // Automatically sync/create Modern Treasury Ledger Accounts for all pulled QBO accounts, bank accounts, and cards
+    const companyNameStr = companyInfo.data?.CompanyInfo?.CompanyName || companyInfo.data?.CompanyName || 'QuickBooks Sandbox Company';
+    const mtSyncResult = syncQboAccountsToModernTreasury(
+      accountsList,
+      uniqueBankAccounts,
+      uniqueCards,
+      companyNameStr
+    );
 
     return res.json({
       success: true,
       pulledAt: new Date().toISOString(),
       realmId: realm,
       summary: {
-        companyName: companyInfo.data?.CompanyInfo?.CompanyName || companyInfo.data?.CompanyName || 'QuickBooks Sandbox Company',
+        companyName: companyNameStr,
         accountsCount: accountsList.length,
         customersCount: customerList.length,
         invoicesCount: invoicesList.length,
         paymentsCount: paymentsList.length,
         salesReceiptsCount: salesReceiptsList.length,
-        bankAccountsCount: allBankAccounts.length,
-        cardsCount: allCards.length,
+        bankAccountsCount: uniqueBankAccounts.length,
+        cardsCount: uniqueCards.length,
+        modernTreasuryAccountsSynced: mtSyncResult.totalSynced,
+        modernTreasuryAccountsCreated: mtSyncResult.createdCount,
         userProfileStatus: userProfile.ok ? 'Active' : 'Unreachable / Scope Dependent',
       },
       data: {
         companyInfo: companyInfo.data,
         accounts: accountsList,
+        modernTreasuryAccounts: mtSyncResult.accounts,
         customers: customerList,
         invoices: invoicesList,
         payments: paymentsList,
         salesReceipts: salesReceiptsList,
-        bankAccounts: allBankAccounts,
-        cards: allCards,
+        bankAccounts: uniqueBankAccounts,
+        cards: uniqueCards,
         userProfile: userProfile.data,
       }
     });
@@ -2336,6 +2318,17 @@ app.use('/bridge', bridgeRouter);
 app.use('/api/moderntreasury', modernTreasuryApiRouter);
 app.use('/moderntreasury', modernTreasuryApiRouter);
 app.use('/api/modern-treasury', modernTreasuryApiRouter);
+
+app.use('/api/paypal', paypalApiRouter);
+app.use('/paypal', paypalApiRouter);
+
+app.use('/api/ai-buyer', aiProcureRouter);
+app.use('/api/ai-procure', aiProcureRouter);
+app.use('/ai-buyer', aiProcureRouter);
+
+app.use('/api/wu-psd2', westernUnionPsd2Router);
+app.use('/api/psd2', westernUnionPsd2Router);
+app.use('/wu-psd2', westernUnionPsd2Router);
 
 // Mount router on multiple sub-paths to guarantee matching under any Vercel/Vite rewrite configuration
 app.use('/api/intuit', intuitRouter);

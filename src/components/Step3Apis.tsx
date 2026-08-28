@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, User, CreditCard, Play, Copy, Check, Terminal, Clock, CheckCircle2, AlertCircle, RefreshCw, Send, Landmark, FileText, Sparkles, Plus, Trash2 } from 'lucide-react';
+import { Building2, User, CreditCard, Play, Copy, Check, Terminal, Clock, CheckCircle2, AlertCircle, RefreshCw, Send, Landmark, FileText, Sparkles, Plus, Trash2, Download, ArrowDownToLine } from 'lucide-react';
 import { TokenResponse } from '../types';
 import { apiFetch } from '../utils/apiClient';
 
@@ -125,6 +125,8 @@ export const Step3Apis: React.FC<Step3ApisProps> = ({ tokens }) => {
   // Live QBO Entities & Generated Tokens/Cards/Accounts
   const [qboCustomers, setQboCustomers] = useState<Array<{ id: string; name: string; email?: string }>>([]);
   const [qboAccounts, setQboAccounts] = useState<Array<{ id: string; name: string; type: string }>>([]);
+  const [qboBankAccounts, setQboBankAccounts] = useState<Array<any>>([]);
+  const [qboCards, setQboCards] = useState<Array<any>>([]);
   const [qboItems, setQboItems] = useState<Array<{ id: string; name: string; price: number }>>([]);
   const [qboInvoices, setQboInvoices] = useState<Array<{ id: string; docNumber: string; totalAmt: number }>>([]);
   const [qboPayments, setQboPayments] = useState<Array<any>>([]);
@@ -135,6 +137,7 @@ export const Step3Apis: React.FC<Step3ApisProps> = ({ tokens }) => {
   const [generatedEChecksList, setGeneratedEChecksList] = useState<Array<{ id: string; label: string }>>([]);
   const [fetchingLiveData, setFetchingLiveData] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [lastPulledPayload, setLastPulledPayload] = useState<any | null>(null);
 
   // Storage Vault Keys
   const STORAGE_KEYS = {
@@ -245,6 +248,7 @@ export const Step3Apis: React.FC<Step3ApisProps> = ({ tokens }) => {
       });
 
       if (res.ok && res.data) {
+        setLastPulledPayload(res.data);
         const d = res.data.data;
         const summary = res.data.summary;
 
@@ -268,23 +272,36 @@ export const Step3Apis: React.FC<Step3ApisProps> = ({ tokens }) => {
         }
 
         // 2. Bank Accounts & Cards
+        const freshBanks: Array<{ id: string; label: string; name?: string }> = [];
         if (d?.bankAccounts && Array.isArray(d.bankAccounts)) {
+          setQboBankAccounts(d.bankAccounts);
           d.bankAccounts.forEach((b: any) => {
             const bId = String(b.id || b.Id || b.accountNumber || b.AcctNum || '');
             const bName = b.name || b.Name || 'Bank Account';
             if (bId) {
-              addSavedBankAccount(bId, `${bName} (${bId})`, bName);
+              freshBanks.push({ id: bId, label: `${bName} (${bId})`, name: bName });
             }
           });
+          setGeneratedBankAccountsList(freshBanks);
+          try { localStorage.setItem(STORAGE_KEYS.BANKS, JSON.stringify(freshBanks)); } catch (e) {}
+        } else {
+          setQboBankAccounts([]);
         }
+
+        const freshCards: Array<{ id: string; label: string; name?: string }> = [];
         if (d?.cards && Array.isArray(d.cards)) {
+          setQboCards(d.cards);
           d.cards.forEach((c: any) => {
             const cId = String(c.id || c.Id || c.accountNumber || c.AcctNum || '');
             const cName = c.name || c.Name || 'Credit Card';
             if (cId) {
-              addSavedCard(cId, `${cName} (${cId})`, cName);
+              freshCards.push({ id: cId, label: `${cName} (${cId})`, name: cName });
             }
           });
+          setGeneratedCardsList(freshCards);
+          try { localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(freshCards)); } catch (e) {}
+        } else {
+          setQboCards([]);
         }
 
         // 3. Accounts (Chart of Accounts)
@@ -326,6 +343,24 @@ export const Step3Apis: React.FC<Step3ApisProps> = ({ tokens }) => {
     } finally {
       setFetchingLiveData(false);
     }
+  };
+
+  const handleDownloadSyncPayload = (format: 'json' | 'txt') => {
+    if (!lastPulledPayload) return;
+    const jsonString = JSON.stringify(lastPulledPayload, null, 2);
+    const mimeType = format === 'txt' ? 'text/plain;charset=utf-8' : 'application/json;charset=utf-8';
+    const blob = new Blob([jsonString], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const company = (lastPulledPayload.summary?.companyName || 'quickbooks_sync').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+
+    link.href = url;
+    link.download = `qbo_live_sync_${company}_${timestamp}.${format}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   React.useEffect(() => {
@@ -1154,19 +1189,46 @@ export const Step3Apis: React.FC<Step3ApisProps> = ({ tokens }) => {
           <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[#C9D1D9]">
             <Sparkles className="w-4 h-4 text-[#D29922] shrink-0" />
             <span>
-              Live QBO Sync: <strong className="text-[#3FB950]">{qboCustomers.length} Customers</strong> | <strong className="text-[#79C0FF]">{qboAccounts.length} Accounts</strong> | <strong className="text-[#D29922]">{generatedBankAccountsList.length} Banks</strong> | <strong className="text-purple-400">{generatedCardsList.length} Cards</strong> | <strong className="text-indigo-400">{qboInvoices.length} Invoices</strong> | <strong className="text-blue-400">{qboPayments.length} Payments</strong> | <strong className="text-teal-400">{qboReceipts.length} Receipts</strong>
+              Live QBO Sync: <strong className="text-[#3FB950]">{qboCustomers.length} Customers</strong> | <strong className="text-[#79C0FF]">{qboAccounts.length} Accounts</strong> | <strong className="text-[#D29922]">{qboBankAccounts.length} Bank Accounts</strong> | <strong className="text-purple-400">{qboCards.length} Cards</strong> | <strong className="text-indigo-400">{qboInvoices.length} Invoices</strong> | <strong className="text-blue-400">{qboPayments.length} Payments</strong> | <strong className="text-teal-400">{qboReceipts.length} Receipts</strong>
             </span>
             {syncMessage && <span className="text-[#3FB950] text-[11px] ml-1">({syncMessage})</span>}
           </div>
-          <button
-            type="button"
-            onClick={fetchAllQboData}
-            disabled={fetchingLiveData}
-            className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-xs font-semibold text-white rounded-lg transition-colors cursor-pointer shadow-xs border border-[#3FB950]/30 shrink-0"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${fetchingLiveData ? 'animate-spin' : ''}`} />
-            <span>{fetchingLiveData ? 'Pulling All 10 Entities...' : '🔄 Pull All QBO Sandbox Entities'}</span>
-          </button>
+          <div className="flex items-center space-x-2 shrink-0">
+            {lastPulledPayload && (
+              <>
+                <button
+                  type="button"
+                  id="btn-step3-download-txt"
+                  onClick={() => handleDownloadSyncPayload('txt')}
+                  className="flex items-center space-x-1 px-2.5 py-1.5 bg-[#21262d] hover:bg-[#30363d] text-xs font-medium text-[#79C0FF] rounded-lg transition-colors border border-[#30363D] cursor-pointer"
+                  title="Download full sync payload as a plain text file"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Download .txt</span>
+                </button>
+                <button
+                  type="button"
+                  id="btn-step3-download-json"
+                  onClick={() => handleDownloadSyncPayload('json')}
+                  className="flex items-center space-x-1 px-2.5 py-1.5 bg-[#21262d] hover:bg-[#30363d] text-xs font-medium text-[#3FB950] rounded-lg transition-colors border border-[#30363D] cursor-pointer"
+                  title="Download full sync payload as JSON"
+                >
+                  <ArrowDownToLine className="w-3.5 h-3.5" />
+                  <span>Download .json</span>
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              id="btn-step3-pull-all"
+              onClick={fetchAllQboData}
+              disabled={fetchingLiveData}
+              className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-xs font-semibold text-white rounded-lg transition-colors cursor-pointer shadow-xs border border-[#3FB950]/30 shrink-0"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${fetchingLiveData ? 'animate-spin' : ''}`} />
+              <span>{fetchingLiveData ? 'Pulling All 10 Entities...' : '🔄 Pull All QBO Sandbox Entities'}</span>
+            </button>
+          </div>
         </div>
 
         {/* API Selector Sub-tabs */}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Zap, Download, RefreshCw, CheckCircle2, AlertCircle, Building2, Users, CreditCard, FileText, Database, Shield, Landmark, Sparkles, User } from 'lucide-react';
+import { Zap, Download, RefreshCw, CheckCircle2, AlertCircle, Building2, Users, CreditCard, FileText, Database, Shield, Landmark, Sparkles, User, Copy, Check, FileCode, ArrowDownToLine } from 'lucide-react';
 import { TokenResponse } from '../types';
 import { apiFetch } from '../utils/apiClient';
 
@@ -15,6 +15,7 @@ export const AutonomousSync: React.FC<AutonomousSyncProps> = ({ tokens, realmId 
   const [customToken, setCustomToken] = useState('');
   const [customRealm, setCustomRealm] = useState(realmId || tokens?.realmId || '');
   const [activeCategoryTab, setActiveCategoryTab] = useState<string>('all');
+  const [copied, setCopied] = useState(false);
 
   const tokenToUse = customToken.trim() || tokens?.access_token || '';
   const realmToUse = customRealm.trim() || tokens?.realmId || '';
@@ -60,6 +61,7 @@ export const AutonomousSync: React.FC<AutonomousSyncProps> = ({ tokens, realmId 
     switch (activeCategoryTab) {
       case 'companyInfo': return d.companyInfo;
       case 'accounts': return d.accounts;
+      case 'modernTreasuryAccounts': return d.modernTreasuryAccounts;
       case 'bankAccounts': return d.bankAccounts;
       case 'cards': return d.cards;
       case 'customers': return d.customers;
@@ -68,6 +70,39 @@ export const AutonomousSync: React.FC<AutonomousSyncProps> = ({ tokens, realmId 
       case 'salesReceipts': return d.salesReceipts;
       case 'userProfile': return d.userProfile;
       case 'all': default: return syncResult;
+    }
+  };
+
+  const handleDownload = (format: 'json' | 'txt', fullPayload: boolean = true) => {
+    if (!syncResult) return;
+    const payload = fullPayload || activeCategoryTab === 'all' ? syncResult : getFilteredData();
+    const jsonString = JSON.stringify(payload, null, 2);
+    const mimeType = format === 'txt' ? 'text/plain;charset=utf-8' : 'application/json;charset=utf-8';
+    const blob = new Blob([jsonString], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    const company = (syncResult.summary?.companyName || 'quickbooks_sync').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const scopeTag = fullPayload || activeCategoryTab === 'all' ? 'full_spectrum' : activeCategoryTab;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+
+    link.href = url;
+    link.download = `qbo_sync_${scopeTag}_${company}_${timestamp}.${format}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCopyJson = async () => {
+    if (!syncResult) return;
+    const payload = activeCategoryTab === 'all' ? syncResult : getFilteredData();
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy to clipboard', err);
     }
   };
 
@@ -151,17 +186,38 @@ export const AutonomousSync: React.FC<AutonomousSyncProps> = ({ tokens, realmId 
         {/* Sync Result Dashboard */}
         {syncResult && (
           <div className="space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-[#30363D]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#30363D]">
               <div className="flex items-center space-x-2 text-white font-semibold text-sm">
                 <CheckCircle2 className="w-5 h-5 text-[#3FB950]" />
                 <span>Autonomous Sync Successful — Company: <span className="text-[#79C0FF]">{syncResult.summary?.companyName}</span></span>
               </div>
-              <div className="text-xs font-mono text-[#8B949E]">
-                Pulled at: {new Date(syncResult.pulledAt).toLocaleTimeString()}
+              <div className="flex items-center space-x-2">
+                <div className="text-xs font-mono text-[#8B949E] mr-2">
+                  Pulled at: {new Date(syncResult.pulledAt).toLocaleTimeString()}
+                </div>
+                {/* Header Direct Download Buttons */}
+                <button
+                  id="btn-download-full-txt"
+                  onClick={() => handleDownload('txt', true)}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-white text-xs font-medium border border-[#30363D] transition-colors cursor-pointer"
+                  title="Download complete payload as a plain text file"
+                >
+                  <FileText className="w-3.5 h-3.5 text-[#79C0FF]" />
+                  <span>Download .txt</span>
+                </button>
+                <button
+                  id="btn-download-full-json"
+                  onClick={() => handleDownload('json', true)}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-bold shadow-xs border border-[#3FB950]/30 transition-colors cursor-pointer"
+                  title="Download complete payload as a JSON file"
+                >
+                  <ArrowDownToLine className="w-3.5 h-3.5" />
+                  <span>Download .json</span>
+                </button>
               </div>
             </div>
 
-            {/* Metrics Grid across all 9 primary entity categories */}
+            {/* Metrics Grid across all primary entity categories */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               <div className="p-3 bg-[#0d1117] rounded-xl border border-[#30363D] text-center space-y-0.5">
                 <div className="text-[10px] font-semibold text-[#8B949E] uppercase">Company Profile</div>
@@ -170,9 +226,15 @@ export const AutonomousSync: React.FC<AutonomousSyncProps> = ({ tokens, realmId 
               </div>
 
               <div className="p-3 bg-[#0d1117] rounded-xl border border-[#30363D] text-center space-y-0.5">
-                <div className="text-[10px] font-semibold text-[#8B949E] uppercase">Accounts</div>
+                <div className="text-[10px] font-semibold text-[#8B949E] uppercase">QBO Accounts</div>
                 <div className="text-base font-bold text-[#79C0FF]">{syncResult.summary?.accountsCount || 0}</div>
                 <div className="text-[10px] text-[#8B949E] truncate">Chart of Accounts</div>
+              </div>
+
+              <div className="p-3 bg-[#0d1117] rounded-xl border border-[#238636]/60 bg-[#238636]/10 text-center space-y-0.5">
+                <div className="text-[10px] font-semibold text-[#3FB950] uppercase">Modern Treasury</div>
+                <div className="text-base font-bold text-[#3FB950]">{syncResult.summary?.modernTreasuryAccountsSynced || syncResult.data?.modernTreasuryAccounts?.length || 0}</div>
+                <div className="text-[10px] text-[#3FB950] truncate font-medium">Auto-Created Accounts</div>
               </div>
 
               <div className="p-3 bg-[#0d1117] rounded-xl border border-[#30363D] text-center space-y-0.5">
@@ -218,16 +280,43 @@ export const AutonomousSync: React.FC<AutonomousSyncProps> = ({ tokens, realmId 
               </div>
             </div>
 
-            {/* Entity Category Filter Tabs */}
+            {/* Entity Category Filter Tabs & Download Controls */}
             <div className="space-y-3">
-              <div className="text-xs font-semibold text-[#8B949E] uppercase tracking-wider">
-                Inspect Pulled Category Payload
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="text-xs font-semibold text-[#8B949E] uppercase tracking-wider">
+                  Inspect Pulled Category Payload
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleCopyJson}
+                    className="flex items-center space-x-1 px-2.5 py-1 rounded bg-[#21262d] hover:bg-[#30363d] text-xs text-[#C9D1D9] border border-[#30363D] transition-colors cursor-pointer"
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5 text-[#3FB950]" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copied ? 'Copied!' : 'Copy View'}</span>
+                  </button>
+                  <button
+                    onClick={() => handleDownload('txt', false)}
+                    className="flex items-center space-x-1 px-2.5 py-1 rounded bg-[#21262d] hover:bg-[#30363d] text-xs text-[#79C0FF] border border-[#30363D] transition-colors cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Download View (.txt)</span>
+                  </button>
+                  <button
+                    onClick={() => handleDownload('json', false)}
+                    className="flex items-center space-x-1 px-2.5 py-1 rounded bg-[#21262d] hover:bg-[#30363d] text-xs text-[#3FB950] border border-[#30363D] transition-colors cursor-pointer font-medium"
+                  >
+                    <FileCode className="w-3.5 h-3.5" />
+                    <span>Download View (.json)</span>
+                  </button>
+                </div>
               </div>
+
               <div className="flex flex-wrap gap-1.5 p-1 bg-[#0d1117] rounded-xl border border-[#30363D]">
                 {[
                   { id: 'all', label: 'Full Aggregated JSON' },
                   { id: 'companyInfo', label: `Company Info` },
-                  { id: 'accounts', label: `Accounts (${syncResult.summary?.accountsCount || 0})` },
+                  { id: 'accounts', label: `QBO Accounts (${syncResult.summary?.accountsCount || 0})` },
+                  { id: 'modernTreasuryAccounts', label: `Modern Treasury (${syncResult.summary?.modernTreasuryAccountsSynced || syncResult.data?.modernTreasuryAccounts?.length || 0})` },
                   { id: 'bankAccounts', label: `Bank Accounts (${syncResult.summary?.bankAccountsCount || 0})` },
                   { id: 'cards', label: `Credit Cards (${syncResult.summary?.cardsCount || 0})` },
                   { id: 'customers', label: `Customers (${syncResult.summary?.customersCount || 0})` },
@@ -261,3 +350,4 @@ export const AutonomousSync: React.FC<AutonomousSyncProps> = ({ tokens, realmId 
     </div>
   );
 };
+

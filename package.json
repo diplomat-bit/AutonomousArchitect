@@ -13,6 +13,7 @@
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
+    "@types/node-forge": "^1.3.14",
     "@types/pdf-parse": "^1.1.5",
     "@vitejs/plugin-react": "^5.0.4",
     "dotenv": "^17.2.3",
@@ -21,6 +22,7 @@
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "multer": "^2.2.0",
+    "node-forge": "^1.4.0",
     "pdf-parse": "^2.4.5",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",

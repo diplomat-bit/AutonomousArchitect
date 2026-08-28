@@ -26,6 +26,80 @@ export interface ModernTreasuryLedger {
   updated_at: string;
 }
 
+export interface ModernTreasuryLedgerAccountBalance {
+  credits: number;
+  debits: number;
+  amount: number;
+  currency: string;
+  currency_exponent: number;
+}
+
+export interface ModernTreasuryLedgerAccount {
+  id: string;
+  object: 'ledger_account';
+  live_mode: boolean;
+  name: string;
+  description: string | null;
+  normalcy: 'credit' | 'debit';
+  ledger_id: string;
+  ledger_account_category_ids?: string[];
+  currency: string;
+  currency_exponent: number;
+  lock_version: number;
+  balances: {
+    pending_balance: ModernTreasuryLedgerAccountBalance;
+    posted_balance: ModernTreasuryLedgerAccountBalance;
+    available_balance: ModernTreasuryLedgerAccountBalance;
+  };
+  metadata: Record<string, any>;
+  discarded_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ModernTreasuryLedgerEntry {
+  id: string;
+  object: 'ledger_entry';
+  live_mode: boolean;
+  amount: number;
+  direction: 'credit' | 'debit';
+  status: string;
+  ledger_account_id: string;
+  ledger_account_currency: string;
+  ledger_account_currency_exponent: number;
+  ledger_account_lock_version: number;
+  ledger_transaction_id: string;
+  resulting_ledger_account_balances?: {
+    pending_balance: ModernTreasuryLedgerAccountBalance;
+    posted_balance: ModernTreasuryLedgerAccountBalance;
+    available_balance: ModernTreasuryLedgerAccountBalance;
+  } | null;
+  discarded_at: string | null;
+  created_at: string;
+  updated_at: string;
+  metadata?: Record<string, any>;
+}
+
+export interface ModernTreasuryLedgerTransaction {
+  id: string;
+  object: 'ledger_transaction';
+  live_mode: boolean;
+  external_id: string | null;
+  ledgerable_type: string | null;
+  ledgerable_id: string | null;
+  ledger_id: string;
+  description: string | null;
+  status: 'posted' | 'pending' | 'archived';
+  archived_reason: string | null;
+  ledger_entries: ModernTreasuryLedgerEntry[];
+  posted_at: string | null;
+  effective_at: string;
+  effective_date: string;
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ModernTreasuryConfig {
   apiKey: string;
   organizationId: string;
@@ -120,8 +194,149 @@ export const DEFAULT_MOCK_LEDGERS: ModernTreasuryLedger[] = [
   },
 ];
 
-// In-memory persistent store of custom/live created ledgers
+// Default Sandbox Ledger Accounts (empty by default until QBO Sync or user action)
+export const DEFAULT_MOCK_LEDGER_ACCOUNTS: ModernTreasuryLedgerAccount[] = [];
+
+// Default Sandbox Transactions
+export const DEFAULT_MOCK_LEDGER_TRANSACTIONS: ModernTreasuryLedgerTransaction[] = [];
+
+// In-memory persistent stores
 let dynamicLedgers: ModernTreasuryLedger[] = [...DEFAULT_MOCK_LEDGERS];
+let dynamicLedgerAccounts: ModernTreasuryLedgerAccount[] = [];
+let dynamicLedgerTransactions: ModernTreasuryLedgerTransaction[] = [];
+
+/**
+ * Automatically creates/syncs QuickBooks Chart of Accounts, Bank Accounts, and Credit Cards
+ * into Modern Treasury Ledger Accounts.
+ */
+export function syncQboAccountsToModernTreasury(
+  accountsList: any[] = [],
+  bankAccountsList: any[] = [],
+  cardsList: any[] = [],
+  companyName: string = 'QuickBooks Sandbox Company'
+) {
+  // Reset dynamic ledger accounts on every sync to prevent stale or unlinked accounts
+  dynamicLedgerAccounts = [];
+  // Find or create a Modern Treasury General Ledger
+  let glLedger = dynamicLedgers.find((l) => l.name === 'General Ledger' || l.name.includes('QuickBooks'));
+  if (!glLedger) {
+    glLedger = {
+      id: '2ec55308-476e-443d-872a-0e497f08a4c5',
+      object: 'ledger',
+      live_mode: false,
+      name: `QuickBooks General Ledger (${companyName})`,
+      description: 'Consolidated General Ledger synced from QuickBooks Chart of Accounts',
+      currency: 'USD',
+      currency_exponent: 2,
+      metadata: { Type: 'CorporateGL', internal_code: 'GL-QBO', company: companyName },
+      discarded_at: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    dynamicLedgers.unshift(glLedger);
+  }
+
+  let createdCount = 0;
+  let updatedCount = 0;
+  const syncedMtAccounts: ModernTreasuryLedgerAccount[] = [];
+
+  const getNormalcy = (qboAcc: any): 'debit' | 'credit' => {
+    const classification = String(qboAcc.Classification || '').toLowerCase();
+    const type = String(qboAcc.AccountType || '').toLowerCase();
+    if (
+      classification.includes('asset') ||
+      classification.includes('expense') ||
+      type.includes('asset') ||
+      type.includes('expense') ||
+      type.includes('bank')
+    ) {
+      return 'debit';
+    }
+    return 'credit';
+  };
+
+  // 1. Process QBO Chart of Accounts 1:1 into Modern Treasury Ledger Accounts
+  for (const qboAcc of accountsList) {
+    if (!qboAcc || !qboAcc.Name) continue;
+
+    const mtAccId = `acc_qbo_${qboAcc.Id || crypto.randomUUID()}`;
+    const name = qboAcc.FullyQualifiedName || qboAcc.Name;
+    const normalcy = getNormalcy(qboAcc);
+    const rawBalance = qboAcc.CurrentBalance ?? qboAcc.Balance ?? 0;
+    const balanceAmount = Math.round(Number(rawBalance) * 100);
+
+    const balanceObj = {
+      pending_balance: { credits: 0, debits: 0, amount: 0, currency: 'USD', currency_exponent: 2 },
+      posted_balance:
+        normalcy === 'debit'
+          ? { credits: 0, debits: Math.abs(balanceAmount), amount: balanceAmount, currency: 'USD', currency_exponent: 2 }
+          : { credits: Math.abs(balanceAmount), debits: 0, amount: balanceAmount, currency: 'USD', currency_exponent: 2 },
+      available_balance:
+        normalcy === 'debit'
+          ? { credits: 0, debits: Math.abs(balanceAmount), amount: balanceAmount, currency: 'USD', currency_exponent: 2 }
+          : { credits: Math.abs(balanceAmount), debits: 0, amount: balanceAmount, currency: 'USD', currency_exponent: 2 },
+    };
+
+    const metadata: Record<string, any> = {
+      qbo_id: String(qboAcc.Id),
+      qbo_account_type: qboAcc.AccountType || 'Other',
+      qbo_account_subtype: qboAcc.AccountSubType || '',
+      qbo_classification: qboAcc.Classification || '',
+      sub_account: Boolean(qboAcc.SubAccount),
+      acct_num: qboAcc.AcctNum || '',
+      synced_at: new Date().toISOString(),
+      source: 'QuickBooks_Chart_of_Accounts',
+    };
+
+    // Check if this account matches any bank account or card for enriched metadata
+    const matchingBank = bankAccountsList.find(
+      (b) => String(b.id) === String(qboAcc.Id) || b.name === qboAcc.Name
+    );
+    if (matchingBank) {
+      metadata.bank_account_type = matchingBank.accountType || 'Checking';
+      if (matchingBank.accountNumber) metadata.account_number = matchingBank.accountNumber;
+    }
+
+    const matchingCard = cardsList.find(
+      (c) => String(c.id) === String(qboAcc.Id) || c.name === qboAcc.Name
+    );
+    if (matchingCard) {
+      metadata.card_type = matchingCard.cardType || 'CREDIT_CARD';
+      if (matchingCard.accountNumber) metadata.card_number = matchingCard.accountNumber;
+    }
+
+    const newMtAcc: ModernTreasuryLedgerAccount = {
+      id: mtAccId,
+      object: 'ledger_account',
+      live_mode: false,
+      name,
+      description: qboAcc.Description || `Synced from QBO ${qboAcc.AccountType || 'Account'} (${qboAcc.Name})`,
+      normalcy,
+      ledger_id: glLedger.id,
+      currency: 'USD',
+      currency_exponent: 2,
+      lock_version: 1,
+      balances: balanceObj,
+      metadata,
+      discarded_at: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    dynamicLedgerAccounts.push(newMtAcc);
+    syncedMtAccounts.push(newMtAcc);
+    createdCount++;
+  }
+
+  return {
+    success: true,
+    ledgerId: glLedger.id,
+    createdCount,
+    updatedCount,
+    totalSynced: syncedMtAccounts.length,
+    accounts: syncedMtAccounts,
+  };
+}
 
 export function getModernTreasuryBaseUrl(): string {
   return (
@@ -780,5 +995,379 @@ modernTreasuryApiRouter.get('/counterparties', (req: Request, res: Response) => 
   ];
   return res.json(mockCounterparties.slice(0, perPage));
 });
+
+// Helper: Build local simulated ledger transaction
+function buildLocalTransaction(params: {
+  status: string;
+  description?: string;
+  ledger_entries: any[];
+  effective_at: string;
+  external_id?: string;
+  metadata?: Record<string, any>;
+}): ModernTreasuryLedgerTransaction {
+  const txId = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const effectiveDate = params.effective_at.slice(0, 10);
+
+  const formattedEntries: ModernTreasuryLedgerEntry[] = params.ledger_entries.map((entry, idx) => {
+    const entryId = crypto.randomUUID();
+    const accId = entry.ledger_account_id || `acc_${idx}`;
+    const acc = dynamicLedgerAccounts.find((a) => a.id === accId);
+
+    if (acc) {
+      acc.lock_version += 1;
+      const amt = Number(entry.amount) || 0;
+      if (entry.direction === 'debit') {
+        acc.balances.posted_balance.debits += amt;
+        acc.balances.posted_balance.amount += amt;
+        acc.balances.available_balance.debits += amt;
+        acc.balances.available_balance.amount += amt;
+      } else {
+        acc.balances.posted_balance.credits += amt;
+        acc.balances.posted_balance.amount += amt;
+        acc.balances.available_balance.credits += amt;
+        acc.balances.available_balance.amount += amt;
+      }
+    }
+
+    return {
+      id: entryId,
+      object: 'ledger_entry',
+      live_mode: false,
+      amount: Number(entry.amount) || 100,
+      direction: entry.direction === 'credit' ? 'credit' : 'debit',
+      status: params.status || 'posted',
+      ledger_account_id: accId,
+      ledger_account_currency: entry.currency || 'USD',
+      ledger_account_currency_exponent: 2,
+      ledger_account_lock_version: acc ? acc.lock_version : 1,
+      ledger_transaction_id: txId,
+      resulting_ledger_account_balances: acc
+        ? {
+            pending_balance: { ...acc.balances.pending_balance },
+            posted_balance: { ...acc.balances.posted_balance },
+            available_balance: { ...acc.balances.available_balance },
+          }
+        : null,
+      discarded_at: null,
+      created_at: now,
+      updated_at: now,
+      metadata: entry.metadata || {},
+    };
+  });
+
+  return {
+    id: txId,
+    object: 'ledger_transaction',
+    live_mode: false,
+    external_id: params.external_id || crypto.randomUUID(),
+    ledgerable_type: null,
+    ledgerable_id: null,
+    ledger_id: formattedEntries[0]?.ledger_account_id
+      ? dynamicLedgerAccounts.find((a) => a.id === formattedEntries[0].ledger_account_id)?.ledger_id ||
+        '019a61f9-185c-780b-82d5-f637884c1d31'
+      : '019a61f9-185c-780b-82d5-f637884c1d31',
+    description: params.description || 'Ledger Transaction',
+    status: (params.status as any) || 'posted',
+    archived_reason: null,
+    ledger_entries: formattedEntries,
+    posted_at: params.status === 'posted' ? now : null,
+    effective_at: params.effective_at,
+    effective_date: effectiveDate,
+    metadata: params.metadata || {},
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+// 8. GET /ledger_accounts (List Ledger Accounts API Reference Endpoint)
+const handleListLedgerAccounts = async (req: Request, res: Response) => {
+  try {
+    const config = getModernTreasuryConfig();
+    const {
+      per_page = 25,
+      after_cursor,
+      id,
+      name,
+      normalcy,
+      ledger_id,
+      ledger_account_category_id,
+      metadata,
+      autoStoreQbo = 'true',
+      forceLive = 'false',
+    } = req.query;
+
+    const perPageNum = Math.min(Math.max(parseInt(String(per_page)) || 25, 1), 100);
+    const shouldAutoStore = String(autoStoreQbo) !== 'false';
+
+    const params = new URLSearchParams();
+    params.set('per_page', String(perPageNum));
+    if (after_cursor) params.set('after_cursor', String(after_cursor));
+
+    if (id) {
+      if (Array.isArray(id)) {
+        id.forEach((val) => params.append('id[]', String(val)));
+      } else {
+        const idStr = String(id);
+        if (idStr.includes(',')) {
+          idStr.split(',').forEach((s) => params.append('id[]', s.trim()));
+        } else {
+          params.append('id[]', idStr);
+        }
+      }
+    }
+
+    if (name) {
+      if (Array.isArray(name)) {
+        name.forEach((n) => params.append('name[]', String(n)));
+      } else {
+        params.append('name', String(name));
+      }
+    }
+
+    if (normalcy) params.set('normalcy', String(normalcy));
+    if (ledger_id) params.set('ledger_id', String(ledger_id));
+    if (ledger_account_category_id) params.set('ledger_account_category_id', String(ledger_account_category_id));
+
+    if (metadata && typeof metadata === 'object') {
+      Object.entries(metadata).forEach(([k, v]) => params.set(`metadata[${k}]`, String(v)));
+    }
+
+    const upstreamUrl = `${config.baseUrl}/api/ledger_accounts?${params.toString()}`;
+    let fetchedAccounts: ModernTreasuryLedgerAccount[] = [];
+    let isLiveUpstream = false;
+    let upstreamStatus = 200;
+    let upstreamError: string | null = null;
+
+    if (config.authorization || forceLive === 'true') {
+      try {
+        const fetchHeaders: Record<string, string> = {
+          Accept: 'application/json',
+          'User-Agent': 'QuickBooks-ModernTreasury-Bridge/2.0',
+        };
+        if (config.authorization) fetchHeaders['Authorization'] = config.authorization;
+
+        const mtRes = await fetch(upstreamUrl, { method: 'GET', headers: fetchHeaders });
+        upstreamStatus = mtRes.status;
+        if (mtRes.ok) {
+          const data = await mtRes.json();
+          if (Array.isArray(data)) {
+            fetchedAccounts = data;
+            isLiveUpstream = true;
+          }
+        } else {
+          upstreamError = `HTTP ${mtRes.status}: ${await mtRes.text()}`;
+        }
+      } catch (e: any) {
+        upstreamError = e.message;
+      }
+    }
+
+    if (fetchedAccounts.length === 0) {
+      let filtered = [...dynamicLedgerAccounts];
+
+      if (id) {
+        const idList = Array.isArray(id)
+          ? id.map(String)
+          : String(id).includes(',')
+          ? String(id).split(',').map((s) => s.trim())
+          : [String(id)];
+        filtered = filtered.filter((acc) => idList.includes(acc.id));
+      }
+
+      if (name) {
+        const nameQuery = String(name).toLowerCase();
+        filtered = filtered.filter((acc) => acc.name.toLowerCase().includes(nameQuery));
+      }
+
+      if (normalcy) {
+        filtered = filtered.filter((acc) => acc.normalcy === String(normalcy).toLowerCase());
+      }
+
+      if (ledger_id) {
+        filtered = filtered.filter((acc) => acc.ledger_id === String(ledger_id));
+      }
+
+      if (metadata && typeof metadata === 'object') {
+        Object.entries(metadata).forEach(([k, v]) => {
+          filtered = filtered.filter((acc) => String(acc.metadata?.[k]).toLowerCase() === String(v).toLowerCase());
+        });
+      }
+
+      fetchedAccounts = filtered.slice(0, perPageNum);
+    }
+
+    const qboStorageResults: any[] = [];
+    if (shouldAutoStore && fetchedAccounts.length > 0) {
+      for (const item of fetchedAccounts) {
+        const bridgeRecord = await lockCallIntoQuickBooks({
+          source: 'MODERN_TREASURY',
+          action: 'LEDGER_LIST',
+          externalEntityId: item.id,
+          amount: (item.balances?.posted_balance?.amount || 0) / 100,
+          currency: item.currency || 'USD',
+          summary: `Modern Treasury Ledger Account: ${item.name}`,
+          qboLinkedEntityType: 'Account',
+          payload: {
+            ...item,
+            mt_base_url: config.baseUrl,
+            gl_account_type: item.normalcy === 'debit' ? 'Bank' : 'Other Current Liability',
+          },
+        });
+        qboStorageResults.push({
+          accountId: item.id,
+          accountName: item.name,
+          normalcy: item.normalcy,
+          bridgeId: bridgeRecord.bridgeId,
+          qboEntityId: bridgeRecord.qboEntityId,
+          status: bridgeRecord.status,
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      object: 'list',
+      data: fetchedAccounts,
+      meta: {
+        total: fetchedAccounts.length,
+        per_page: perPageNum,
+        after_cursor: fetchedAccounts.length >= perPageNum ? fetchedAccounts[fetchedAccounts.length - 1]?.id : null,
+        is_live_mode: isLiveUpstream,
+      },
+      quickbooksStorage: {
+        autoStored: shouldAutoStore,
+        storedCount: qboStorageResults.length,
+        results: qboStorageResults,
+      },
+      upstream: {
+        status: upstreamStatus,
+        error: upstreamError,
+        url: upstreamUrl,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+modernTreasuryApiRouter.get('/ledger_accounts', handleListLedgerAccounts);
+
+// 9. POST /ledger_transactions (Create Ledger Transaction API Reference Endpoint)
+const handleCreateLedgerTransaction = async (req: Request, res: Response) => {
+  try {
+    const config = getModernTreasuryConfig();
+    const {
+      status = 'posted',
+      description,
+      ledger_entries = [],
+      effective_at = new Date().toISOString(),
+      external_id = `tx_ext_${crypto.randomUUID()}`,
+      ledgerable_type = null,
+      ledgerable_id = null,
+      metadata = {},
+    } = req.body;
+
+    if (!Array.isArray(ledger_entries) || ledger_entries.length < 2) {
+      return res.status(422).json({
+        success: false,
+        error: 'Modern Treasury requires at least 2 ledger_entries (balanced debits and credits)',
+      });
+    }
+
+    let createdTransaction: ModernTreasuryLedgerTransaction;
+
+    if (config.authorization) {
+      try {
+        const mtRes = await fetch(`${config.baseUrl}/api/ledger_transactions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: config.authorization,
+          },
+          body: JSON.stringify({
+            status,
+            description,
+            ledger_entries,
+            effective_at,
+            external_id,
+            ledgerable_type,
+            ledgerable_id,
+            metadata,
+          }),
+        });
+
+        if (mtRes.ok) {
+          createdTransaction = await mtRes.json();
+        } else {
+          const errText = await mtRes.text();
+          throw new Error(`Upstream Modern Treasury HTTP ${mtRes.status}: ${errText}`);
+        }
+      } catch (err: any) {
+        console.warn('Upstream MT create transaction fallback to local simulator:', err.message);
+        createdTransaction = buildLocalTransaction({
+          status,
+          description,
+          ledger_entries,
+          effective_at,
+          external_id,
+          metadata,
+        });
+      }
+    } else {
+      createdTransaction = buildLocalTransaction({
+        status,
+        description,
+        ledger_entries,
+        effective_at,
+        external_id,
+        metadata,
+      });
+    }
+
+    const totalAmount = createdTransaction.ledger_entries.reduce((sum, e) => sum + e.amount, 0) / 2 / 100;
+    const bridgeRecord = await lockCallIntoQuickBooks({
+      source: 'MODERN_TREASURY',
+      action: 'LEDGER_CREATE',
+      externalEntityId: createdTransaction.id,
+      amount: totalAmount,
+      currency: 'USD',
+      summary: `Create Modern Treasury Double-Entry Transaction (${createdTransaction.id})`,
+      qboLinkedEntityType: 'JournalEntry',
+      payload: {
+        ...createdTransaction,
+        mt_base_url: config.baseUrl,
+        sync_origin: 'MODERN_TREASURY_LEDGER_TRANSACTION_CREATE',
+      },
+    });
+
+    dynamicLedgerTransactions.unshift(createdTransaction);
+
+    return res.status(201).json({
+      ...createdTransaction,
+      quickbooksStorage: {
+        bridgeId: bridgeRecord.bridgeId,
+        qboEntityId: bridgeRecord.qboEntityId,
+        status: bridgeRecord.status,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+modernTreasuryApiRouter.post('/ledger_transactions', handleCreateLedgerTransaction);
+
+// 10. GET /ledger_transactions (List Ledger Transactions)
+modernTreasuryApiRouter.get('/ledger_transactions', (req: Request, res: Response) => {
+  return res.json({
+    success: true,
+    object: 'list',
+    data: dynamicLedgerTransactions,
+    meta: { total: dynamicLedgerTransactions.length },
+  });
+});
+
 
 

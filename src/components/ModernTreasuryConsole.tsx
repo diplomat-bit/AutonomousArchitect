@@ -50,8 +50,9 @@ interface ModernTreasuryConsoleProps {
 export function ModernTreasuryConsole({ onSendToAiIngest }: ModernTreasuryConsoleProps) {
   const [config, setConfig] = useState<any>(null);
   const [loadingConfig, setLoadingConfig] = useState(false);
-  
-  // Query parameters
+  const [activeConsoleTab, setActiveConsoleTab] = useState<'ledgers' | 'ledger_accounts' | 'create_transaction'>('ledgers');
+
+  // Ledgers Query parameters
   const [perPage, setPerPage] = useState<number>(25);
   const [idFilter, setIdFilter] = useState<string>('');
   const [metadataKey, setMetadataKey] = useState<string>('');
@@ -61,6 +62,30 @@ export function ModernTreasuryConsole({ onSendToAiIngest }: ModernTreasuryConsol
   const [afterCursor, setAfterCursor] = useState<string>('');
   const [autoStoreQbo, setAutoStoreQbo] = useState<boolean>(true);
   const [targetType, setTargetType] = useState<'Account' | 'JournalEntry'>('Account');
+
+  // Ledger Accounts Query Parameters (List Ledger Accounts API Reference)
+  const [accIdFilter, setAccIdFilter] = useState<string>('');
+  const [accNameFilter, setAccNameFilter] = useState<string>('');
+  const [accNormalcyFilter, setAccNormalcyFilter] = useState<string>('');
+  const [accLedgerIdFilter, setAccLedgerIdFilter] = useState<string>('');
+  const [accMetadataKey, setAccMetadataKey] = useState<string>('Type');
+  const [accMetadataVal, setAccMetadataVal] = useState<string>('Loan');
+  const [ledgerAccounts, setLedgerAccounts] = useState<any[]>([]);
+  const [loadingAccounts, setLoadingAccounts] = useState<boolean>(false);
+  const [accountsError, setAccountsError] = useState<string | null>(null);
+
+  // Create Ledger Transaction State (POST /api/ledger_transactions)
+  const [txStatus, setTxStatus] = useState<'posted' | 'pending'>('posted');
+  const [txDescription, setTxDescription] = useState<string>('Autonomous Settlement Deposit');
+  const [txExternalId, setTxExternalId] = useState<string>(`tx_ext_${Math.random().toString(36).slice(2, 10)}`);
+  const [txEffectiveAt, setTxEffectiveAt] = useState<string>(new Date().toISOString());
+  const [txDebitAccId, setTxDebitAccId] = useState<string>('6168628a-05a6-4d30-80ca-4080ea699179');
+  const [txDebitAmount, setTxDebitAmount] = useState<number>(100);
+  const [txCreditAccId, setTxCreditAccId] = useState<string>('641e4d45-7fff-4e7e-ae05-1db2614b4a1e');
+  const [txCreditAmount, setTxCreditAmount] = useState<number>(100);
+  const [creatingTransaction, setCreatingTransaction] = useState<boolean>(false);
+  const [createdTxResult, setCreatedTxResult] = useState<any>(null);
+  const [txError, setTxError] = useState<string | null>(null);
 
   // Results state
   const [ledgers, setLedgers] = useState<ModernTreasuryLedgerItem[]>([]);
@@ -74,7 +99,7 @@ export function ModernTreasuryConsole({ onSendToAiIngest }: ModernTreasuryConsol
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [activeCodeLang, setActiveCodeLang] = useState<'shell' | 'node' | 'python' | 'ruby'>('shell');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [selectedLedgerForModal, setSelectedLedgerForModal] = useState<ModernTreasuryLedgerItem | null>(null);
+  const [selectedLedgerForModal, setSelectedLedgerForModal] = useState<any | null>(null);
 
   // New Ledger Form State
   const [newLedgerName, setNewLedgerName] = useState('');
@@ -110,9 +135,88 @@ export function ModernTreasuryConsole({ onSendToAiIngest }: ModernTreasuryConsol
 
   useEffect(() => {
     loadConfig();
-    // Auto trigger initial fetch to show existing ledgers
     fetchLedgers();
+    fetchLedgerAccounts();
   }, []);
+
+  const fetchLedgerAccounts = async () => {
+    setLoadingAccounts(true);
+    setAccountsError(null);
+    try {
+      const params = new URLSearchParams();
+      params.set('per_page', String(perPage));
+      params.set('autoStoreQbo', 'true');
+      if (accIdFilter.trim()) params.set('id', accIdFilter.trim());
+      if (accNameFilter.trim()) params.set('name', accNameFilter.trim());
+      if (accNormalcyFilter.trim()) params.set('normalcy', accNormalcyFilter.trim());
+      if (accLedgerIdFilter.trim()) params.set('ledger_id', accLedgerIdFilter.trim());
+      if (accMetadataKey.trim() && accMetadataVal.trim()) {
+        params.set(`metadata[${accMetadataKey.trim()}]`, accMetadataVal.trim());
+      }
+
+      const queryString = params.toString();
+      const endpoint = `/api/moderntreasury/ledger_accounts?${queryString}`;
+      const res = await apiFetch<any>(endpoint);
+
+      if (res.ok && res.data?.data) {
+        setLedgerAccounts(res.data.data);
+      } else {
+        setAccountsError(res.error || 'Failed to list ledger accounts');
+      }
+    } catch (e: any) {
+      setAccountsError(e.message);
+    } finally {
+      setLoadingAccounts(false);
+    }
+  };
+
+  const handleCreateTransaction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingTransaction(true);
+    setTxError(null);
+    setCreatedTxResult(null);
+
+    try {
+      const payload = {
+        status: txStatus,
+        description: txDescription,
+        external_id: txExternalId,
+        effective_at: txEffectiveAt,
+        ledger_entries: [
+          {
+            amount: Number(txDebitAmount),
+            direction: 'debit',
+            ledger_account_id: txDebitAccId,
+          },
+          {
+            amount: Number(txCreditAmount),
+            direction: 'credit',
+            ledger_account_id: txCreditAccId,
+          },
+        ],
+        metadata: {
+          Type: 'Loan',
+          created_via: 'ModernTreasuryConsole',
+        },
+      };
+
+      const res = await apiFetch<any>('/api/moderntreasury/ledger_transactions', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok && res.data) {
+        setCreatedTxResult(res.data);
+        fetchLedgerAccounts();
+      } else {
+        setTxError(res.error || 'Failed to create ledger transaction');
+      }
+    } catch (e: any) {
+      setTxError(e.message);
+    } finally {
+      setCreatingTransaction(false);
+    }
+  };
 
   const fetchLedgers = async () => {
     setLoading(true);
@@ -480,6 +584,48 @@ puts response.read_body`;
             </span>
           </div>
         </div>
+
+        {/* API Endpoint Selector Tabs */}
+        <div className="flex items-center space-x-2 pt-3 border-t border-[#30363D]/60 overflow-x-auto">
+          <button
+            onClick={() => setActiveConsoleTab('ledgers')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-bold text-xs transition-all shrink-0 ${
+              activeConsoleTab === 'ledgers'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-950/40 border border-indigo-400/40'
+                : 'bg-[#0d1117] text-[#8B949E] hover:text-white border border-[#30363D]'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span>GET /api/ledgers</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveConsoleTab('ledger_accounts');
+              fetchLedgerAccounts();
+            }}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-bold text-xs transition-all shrink-0 ${
+              activeConsoleTab === 'ledger_accounts'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-950/40 border border-indigo-400/40'
+                : 'bg-[#0d1117] text-[#8B949E] hover:text-white border border-[#30363D]'
+            }`}
+          >
+            <Database className="w-4 h-4 text-cyan-400" />
+            <span>GET /api/ledger_accounts (List Accounts)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveConsoleTab('create_transaction')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-bold text-xs transition-all shrink-0 ${
+              activeConsoleTab === 'create_transaction'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/40 border border-emerald-400/40'
+                : 'bg-[#0d1117] text-[#8B949E] hover:text-white border border-[#30363D]'
+            }`}
+          >
+            <Plus className="w-4 h-4 text-emerald-300" />
+            <span>POST /api/ledger_transactions (Create Transaction)</span>
+          </button>
+        </div>
       </div>
 
       {/* PDF Upload, Stage Tracker & Account Mapping Panel */}
@@ -704,344 +850,730 @@ puts response.read_body`;
         </div>
       )}
 
-      {/* Query Filter & Execution Console */}
-      <div className="bg-[#161B22] rounded-xl border border-[#30363D] p-5 shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Sliders className="w-4 h-4 text-indigo-400" />
-            <h3 className="text-sm font-bold text-white">Query Parameters & Filtering</h3>
-          </div>
-          <span className="text-[11px] text-[#8B949E] font-mono">
-            GET https://app.moderntreasury.com/api/ledgers
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {/* Per Page */}
-          <div>
-            <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
-              per_page (int32)
-            </label>
-            <select
-              value={perPage}
-              onChange={(e) => setPerPage(Number(e.target.value))}
-              className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white focus:border-indigo-500 focus:outline-hidden"
-            >
-              <option value={10}>10</option>
-              <option value={25}>25 (Default)</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
-
-          {/* ID Filter */}
-          <div className="md:col-span-2">
-            <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
-              id[] (array of strings)
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. 019a61f9-185c-780b-82d5-f637884c1d31"
-              value={idFilter}
-              onChange={(e) => setIdFilter(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#8B949E]/50 focus:border-indigo-500 focus:outline-hidden font-mono"
-            />
-          </div>
-
-          {/* Metadata Key & Value */}
-          <div>
-            <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
-              metadata Key
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Type"
-              value={metadataKey}
-              onChange={(e) => setMetadataKey(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#8B949E]/50 focus:border-indigo-500 focus:outline-hidden font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
-              metadata Value
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Loan"
-              value={metadataValue}
-              onChange={(e) => setMetadataValue(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#8B949E]/50 focus:border-indigo-500 focus:outline-hidden font-mono"
-            />
-          </div>
-
-          {/* Target Ledger Type */}
-          <div>
-            <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
-              QBO Store Mode
-            </label>
-            <select
-              value={targetType}
-              onChange={(e) => setTargetType(e.target.value as any)}
-              className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white focus:border-indigo-500 focus:outline-hidden"
-            >
-              <option value="Account">Chart of Accounts</option>
-              <option value="JournalEntry">Journal Entry GL</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Secondary Parameters row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-          <div className="flex items-center gap-2">
-            <div className="w-1/3">
-              <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
-                updated_at Op
-              </label>
-              <select
-                value={updatedAtOperator}
-                onChange={(e) => setUpdatedAtOperator(e.target.value as any)}
-                className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-2 py-1.5 text-xs text-white focus:border-indigo-500 focus:outline-hidden"
-              >
-                <option value="gt">&gt; (gt)</option>
-                <option value="gte">&gt;= (gte)</option>
-                <option value="lt">&lt; (lt)</option>
-                <option value="lte">&lt;= (lte)</option>
-                <option value="eq">= (eq)</option>
-              </select>
+      {/* LEDGERS TAB VIEW */}
+      {activeConsoleTab === 'ledgers' && (
+        <>
+          {/* Query Filter & Execution Console */}
+          <div className="bg-[#161B22] rounded-xl border border-[#30363D] p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Sliders className="w-4 h-4 text-indigo-400" />
+                <h3 className="text-sm font-bold text-white">Query Parameters & Filtering (GET /api/ledgers)</h3>
+              </div>
+              <span className="text-[11px] text-[#8B949E] font-mono">
+                GET https://app.moderntreasury.com/api/ledgers
+              </span>
             </div>
-            <div className="w-2/3">
-              <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
-                updated_at Date
-              </label>
-              <input
-                type="text"
-                placeholder="2022-01-01T12:00:00Z"
-                value={updatedAtDate}
-                onChange={(e) => setUpdatedAtDate(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#8B949E]/50 focus:border-indigo-500 focus:outline-hidden font-mono"
-              />
-            </div>
-          </div>
 
-          <div>
-            <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
-              after_cursor (pagination)
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. 019a61f8-2525-70f3-a6b2-1af97ed08594"
-              value={afterCursor}
-              onChange={(e) => setAfterCursor(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#8B949E]/50 focus:border-indigo-500 focus:outline-hidden font-mono"
-            />
-          </div>
-
-          <div className="flex items-end">
-            <label className="flex items-center space-x-2.5 p-2 rounded-lg bg-[#0d1117] border border-[#30363D] w-full cursor-pointer hover:border-emerald-500/50 transition-colors">
-              <input
-                type="checkbox"
-                checked={autoStoreQbo}
-                onChange={(e) => setAutoStoreQbo(e.target.checked)}
-                className="rounded border-[#30363D] text-emerald-600 focus:ring-emerald-500 h-4 w-4 bg-[#161B22]"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {/* Per Page */}
               <div>
-                <p className="text-xs font-bold text-white">Auto-Store in QuickBooks</p>
-                <p className="text-[10px] text-[#8B949E]">Locks every fetched ledger into QBO Ledger</p>
+                <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
+                  per_page (int32)
+                </label>
+                <select
+                  value={perPage}
+                  onChange={(e) => setPerPage(Number(e.target.value))}
+                  className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white focus:border-indigo-500 focus:outline-hidden"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25 (Default)</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
               </div>
-            </label>
-          </div>
-        </div>
 
-        {/* Execute Button Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#30363D]">
-          <div className="flex items-center space-x-2 text-xs text-[#8B949E]">
-            {latencyMs !== null && (
-              <span className="px-2 py-1 rounded bg-[#0d1117] border border-[#30363D] font-mono text-emerald-400">
-                ⚡ Latency: {latencyMs}ms
-              </span>
-            )}
-            {metaInfo && (
-              <span className="px-2 py-1 rounded bg-[#0d1117] border border-[#30363D] font-mono text-indigo-300">
-                Count: {metaInfo.total} Ledgers
-              </span>
-            )}
-          </div>
+              {/* ID Filter */}
+              <div className="md:col-span-2">
+                <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
+                  id[] (array of strings)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 019a61f9-185c-780b-82d5-f637884c1d31"
+                  value={idFilter}
+                  onChange={(e) => setIdFilter(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#8B949E]/50 focus:border-indigo-500 focus:outline-hidden font-mono"
+                />
+              </div>
 
-          <div className="flex items-center space-x-2 w-full sm:w-auto">
-            <button
-              onClick={fetchLedgers}
-              disabled={loading}
-              className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white text-xs font-bold shadow-lg shadow-indigo-900/30 transition-all border border-indigo-400/40 disabled:opacity-50"
-            >
-              <Play className={`w-3.5 h-3.5 fill-white ${loading ? 'animate-pulse' : ''}`} />
-              <span>{loading ? 'Fetching & Storing in QBO...' : 'Fetch Ledgers & Store into QuickBooks'}</span>
-            </button>
-          </div>
-        </div>
-      </div>
+              {/* Metadata Key & Value */}
+              <div>
+                <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
+                  metadata Key
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Type"
+                  value={metadataKey}
+                  onChange={(e) => setMetadataKey(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#8B949E]/50 focus:border-indigo-500 focus:outline-hidden font-mono"
+                />
+              </div>
 
-      {/* Error Display */}
-      {error && (
-        <div className="bg-rose-950/30 border border-rose-500/40 rounded-xl p-4 flex items-start space-x-3 text-xs text-rose-300">
-          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <p className="font-bold text-white">Request Execution Error</p>
-            <p className="font-mono">{error}</p>
-          </div>
-        </div>
-      )}
+              <div>
+                <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
+                  metadata Value
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Loan"
+                  value={metadataValue}
+                  onChange={(e) => setMetadataValue(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#8B949E]/50 focus:border-indigo-500 focus:outline-hidden font-mono"
+                />
+              </div>
 
-      {/* QuickBooks Storage Status Banner */}
-      {qboStorageInfo && (
-        <div className="bg-emerald-950/25 border border-emerald-500/40 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-5 h-5" />
+              {/* Target Ledger Type */}
+              <div>
+                <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
+                  QBO Store Mode
+                </label>
+                <select
+                  value={targetType}
+                  onChange={(e) => setTargetType(e.target.value as any)}
+                  className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white focus:border-indigo-500 focus:outline-hidden"
+                >
+                  <option value="Account">Chart of Accounts</option>
+                  <option value="JournalEntry">Journal Entry GL</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <p className="font-bold text-white flex items-center gap-2">
-                <span>QuickBooks Ledger Storage Completed</span>
-                <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-mono">
-                  {qboStorageInfo.storedCount} Recorded
-                </span>
-              </p>
-              <p className="text-[#8B949E] text-[11px]">
-                GL Mapping: <code className="text-emerald-300 font-mono">{qboStorageInfo.glDebitAccount}</code> ↔ <code className="text-emerald-300 font-mono">{qboStorageInfo.glCreditAccount}</code>
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center space-x-2 font-mono text-[11px] text-slate-300">
-            <span className="px-2.5 py-1 rounded bg-[#0d1117] border border-[#30363D] text-emerald-400 font-bold">
-              STATUS: {qboStorageInfo.status}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Ledgers Grid View */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Database className="w-4 h-4 text-indigo-400" />
-            <h3 className="text-sm font-bold text-white">
-              Retrieved Modern Treasury Ledgers ({ledgers.length})
-            </h3>
-          </div>
-          <span className="text-xs text-[#8B949E]">
-            All ledgers automatically synced with deterministic HMAC hashes
-          </span>
-        </div>
-
-        {ledgers.length === 0 ? (
-          <div className="bg-[#161B22] rounded-xl border border-[#30363D] p-8 text-center text-xs text-[#8B949E] space-y-3">
-            <Building2 className="w-8 h-8 mx-auto text-[#8B949E]/40" />
-            <p>No ledgers found matching your query filters.</p>
-            <button
-              onClick={fetchLedgers}
-              className="px-3 py-1.5 rounded-lg bg-[#21262d] text-white text-xs font-medium hover:bg-[#30363D] transition-colors"
-            >
-              Reset Filters & List All
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {ledgers.map((l) => (
-              <div
-                key={l.id}
-                className="bg-[#161B22] rounded-xl border border-[#30363D] hover:border-indigo-500/60 p-4 transition-all space-y-3 shadow-xs"
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <h4 className="text-sm font-bold text-white">{l.name}</h4>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                        l.live_mode
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                      }`}>
-                        {l.live_mode ? 'LIVE' : 'SANDBOX'}
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-500/20 text-indigo-300">
-                        {l.currency || 'USD'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-[#8B949E] line-clamp-2">
-                      {l.description || 'No description provided.'}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => copyToClipboard(l.id, l.id)}
-                    className="p-1.5 rounded-md hover:bg-[#21262d] text-[#8B949E] hover:text-white transition-colors"
-                    title="Copy Ledger UUID"
+            {/* Secondary Parameters row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+              <div className="flex items-center gap-2">
+                <div className="w-1/3">
+                  <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
+                    updated_at Op
+                  </label>
+                  <select
+                    value={updatedAtOperator}
+                    onChange={(e) => setUpdatedAtOperator(e.target.value as any)}
+                    className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-2 py-1.5 text-xs text-white focus:border-indigo-500 focus:outline-hidden"
                   >
-                    {copiedKey === l.id ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                  </button>
+                    <option value="gt">&gt; (gt)</option>
+                    <option value="gte">&gt;= (gte)</option>
+                    <option value="lt">&lt; (lt)</option>
+                    <option value="lte">&lt;= (lte)</option>
+                    <option value="eq">= (eq)</option>
+                  </select>
                 </div>
-
-                {/* ID & Metadata Tags */}
-                <div className="bg-[#0d1117] rounded-lg p-2.5 border border-[#30363D]/70 space-y-2 text-xs font-mono">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-[#8B949E]">ID:</span>
-                    <span className="text-indigo-300 truncate max-w-[280px]">{l.id}</span>
-                  </div>
-
-                  {l.metadata && Object.keys(l.metadata).length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1 border-t border-[#30363D]/40">
-                      {Object.entries(l.metadata).map(([k, v]) => (
-                        <span
-                          key={k}
-                          className="px-2 py-0.5 rounded bg-indigo-950/40 text-indigo-300 border border-indigo-500/30 text-[10px]"
-                        >
-                          {k}: {String(v)}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between text-[10px] text-[#8B949E] pt-1">
-                    <span>Created: {new Date(l.created_at).toLocaleDateString()}</span>
-                    <span>Updated: {new Date(l.updated_at).toLocaleDateString()}</span>
-                  </div>
+                <div className="w-2/3">
+                  <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
+                    updated_at Date
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="2022-01-01T12:00:00Z"
+                    value={updatedAtDate}
+                    onChange={(e) => setUpdatedAtDate(e.target.value)}
+                    className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#8B949E]/50 focus:border-indigo-500 focus:outline-hidden font-mono"
+                  />
                 </div>
+              </div>
 
-                {/* QBO Storage Verification Ribbon */}
-                <div className="flex items-center justify-between pt-1 border-t border-[#30363D]/60 text-xs">
-                  <div className="flex items-center space-x-1.5 text-emerald-400 font-medium">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span className="text-[11px]">Locked into QuickBooks Ledger</span>
+              <div>
+                <label className="block text-[11px] font-medium text-[#8B949E] mb-1">
+                  after_cursor (pagination)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 019a61f8-2525-70f3-a6b2-1af97ed08594"
+                  value={afterCursor}
+                  onChange={(e) => setAfterCursor(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-xs text-white placeholder-[#8B949E]/50 focus:border-indigo-500 focus:outline-hidden font-mono"
+                />
+              </div>
+
+              <div className="flex items-end">
+                <label className="flex items-center space-x-2.5 p-2 rounded-lg bg-[#0d1117] border border-[#30363D] w-full cursor-pointer hover:border-emerald-500/50 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={autoStoreQbo}
+                    onChange={(e) => setAutoStoreQbo(e.target.checked)}
+                    className="rounded border-[#30363D] text-emerald-600 focus:ring-emerald-500 h-4 w-4 bg-[#161B22]"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-white">Auto-Store in QuickBooks</p>
+                    <p className="text-[10px] text-[#8B949E]">Locks every fetched ledger into QBO Ledger</p>
                   </div>
+                </label>
+              </div>
+            </div>
 
-                  <div className="flex items-center space-x-2">
-                    {onSendToAiIngest && (
+            {/* Execute Button Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#30363D]">
+              <div className="flex items-center space-x-2 text-xs text-[#8B949E]">
+                {latencyMs !== null && (
+                  <span className="px-2 py-1 rounded bg-[#0d1117] border border-[#30363D] font-mono text-emerald-400">
+                    ⚡ Latency: {latencyMs}ms
+                  </span>
+                )}
+                {metaInfo && (
+                  <span className="px-2 py-1 rounded bg-[#0d1117] border border-[#30363D] font-mono text-indigo-300">
+                    Count: {metaInfo.total} Ledgers
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
+                <button
+                  onClick={fetchLedgers}
+                  disabled={loading}
+                  className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white text-xs font-bold shadow-lg shadow-indigo-900/30 transition-all border border-indigo-400/40 disabled:opacity-50"
+                >
+                  <Play className={`w-3.5 h-3.5 fill-white ${loading ? 'animate-pulse' : ''}`} />
+                  <span>{loading ? 'Fetching & Storing in QBO...' : 'Fetch Ledgers & Store into QuickBooks'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="bg-rose-950/30 border border-rose-500/40 rounded-xl p-4 flex items-start space-x-3 text-xs text-rose-300">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-bold text-white">Request Execution Error</p>
+                <p className="font-mono">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* QuickBooks Storage Status Banner */}
+          {qboStorageInfo && (
+            <div className="bg-emerald-950/25 border border-emerald-500/40 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center space-x-3">
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-white flex items-center gap-2">
+                    <span>QuickBooks Ledger Storage Completed</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-mono">
+                      {qboStorageInfo.storedCount} Recorded
+                    </span>
+                  </p>
+                  <p className="text-[#8B949E] text-[11px]">
+                    GL Mapping: <code className="text-emerald-300 font-mono">{qboStorageInfo.glDebitAccount}</code> ↔ <code className="text-emerald-300 font-mono">{qboStorageInfo.glCreditAccount}</code>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 font-mono text-[11px] text-slate-300">
+                <span className="px-2.5 py-1 rounded bg-[#0d1117] border border-[#30363D] text-emerald-400 font-bold">
+                  STATUS: {qboStorageInfo.status}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Ledgers Grid View */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Database className="w-4 h-4 text-indigo-400" />
+                <h3 className="text-sm font-bold text-white">
+                  Retrieved Modern Treasury Ledgers ({ledgers.length})
+                </h3>
+              </div>
+              <span className="text-xs text-[#8B949E]">
+                All ledgers automatically synced with deterministic HMAC hashes
+              </span>
+            </div>
+
+            {ledgers.length === 0 ? (
+              <div className="bg-[#161B22] rounded-xl border border-[#30363D] p-8 text-center text-xs text-[#8B949E] space-y-3">
+                <Building2 className="w-8 h-8 mx-auto text-[#8B949E]/40" />
+                <p>No ledgers found matching your query filters.</p>
+                <button
+                  onClick={fetchLedgers}
+                  className="px-3 py-1.5 rounded-lg bg-[#21262d] text-white text-xs font-medium hover:bg-[#30363D] transition-colors"
+                >
+                  Reset Filters & List All
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {ledgers.map((l) => (
+                  <div
+                    key={l.id}
+                    className="bg-[#161B22] rounded-xl border border-[#30363D] hover:border-indigo-500/60 p-4 transition-all space-y-3 shadow-xs"
+                  >
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <h4 className="text-sm font-bold text-white">{l.name}</h4>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                            l.live_mode
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                              : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          }`}>
+                            {l.live_mode ? 'LIVE' : 'SANDBOX'}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-500/20 text-indigo-300">
+                            {l.currency || 'USD'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#8B949E] line-clamp-2">
+                          {l.description || 'No description provided.'}
+                        </p>
+                      </div>
+
                       <button
-                        onClick={() => onSendToAiIngest(JSON.stringify(l, null, 2))}
-                        className="px-2.5 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[11px] font-bold transition-colors flex items-center space-x-1"
+                        onClick={() => copyToClipboard(l.id, l.id)}
+                        className="p-1.5 rounded-md hover:bg-[#21262d] text-[#8B949E] hover:text-white transition-colors"
+                        title="Copy Ledger UUID"
                       >
-                        <Sparkles className="w-3 h-3" />
-                        <span>AI Ingest</span>
+                        {copiedKey === l.id ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
                       </button>
-                    )}
-                    <button
-                      onClick={() => setSelectedLedgerForModal(l)}
-                      className="px-2.5 py-1 rounded bg-[#21262d] hover:bg-[#30363D] text-white text-[11px] font-medium transition-colors"
-                    >
-                      Raw JSON
-                    </button>
+                    </div>
+
+                    {/* ID & Metadata Tags */}
+                    <div className="bg-[#0d1117] rounded-lg p-2.5 border border-[#30363D]/70 space-y-2 text-xs font-mono">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[#8B949E]">ID:</span>
+                        <span className="text-indigo-300 truncate max-w-[280px]">{l.id}</span>
+                      </div>
+
+                      {l.metadata && Object.keys(l.metadata).length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-1 border-t border-[#30363D]/40">
+                          {Object.entries(l.metadata).map(([k, v]) => (
+                            <span
+                              key={k}
+                              className="px-2 py-0.5 rounded bg-indigo-950/40 text-indigo-300 border border-indigo-500/30 text-[10px]"
+                            >
+                              {k}: {String(v)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-[10px] text-[#8B949E] pt-1">
+                        <span>Created: {new Date(l.created_at).toLocaleDateString()}</span>
+                        <span>Updated: {new Date(l.updated_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+
+                    {/* QBO Storage Verification Ribbon */}
+                    <div className="flex items-center justify-between pt-1 border-t border-[#30363D]/60 text-xs">
+                      <div className="flex items-center space-x-1.5 text-emerald-400 font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span className="text-[11px]">Locked into QuickBooks Ledger</span>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        {onSendToAiIngest && (
+                          <button
+                            onClick={() => onSendToAiIngest(JSON.stringify(l, null, 2))}
+                            className="px-2.5 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[11px] font-bold transition-colors flex items-center space-x-1"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            <span>AI Ingest</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setSelectedLedgerForModal(l)}
+                          className="px-2.5 py-1 rounded bg-[#21262d] hover:bg-[#30363D] text-white text-[11px] font-medium transition-colors"
+                        >
+                          Raw JSON
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* LIST LEDGER ACCOUNTS TAB VIEW (GET /api/ledger_accounts) */}
+      {activeConsoleTab === 'ledger_accounts' && (
+        <div className="space-y-5">
+          {/* Query Filters Console */}
+          <div className="bg-[#161B22] rounded-xl border border-[#30363D] p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Sliders className="w-4 h-4 text-cyan-400" />
+                <h3 className="text-sm font-bold text-white">List Ledger Accounts Parameters (GET /api/ledger_accounts)</h3>
+              </div>
+              <span className="text-[11px] font-mono text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/30">
+                https://app.moderntreasury.com/api/ledger_accounts
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
+              <div>
+                <label className="block text-[#8B949E] font-medium mb-1">id[] (bulk IDs)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 6168628a-05a6-4d30-80ca-4080ea699179"
+                  value={accIdFilter}
+                  onChange={(e) => setAccIdFilter(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-white font-mono placeholder-[#8B949E]/40 focus:border-indigo-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#8B949E] font-medium mb-1">name[] (partial match)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. my-account"
+                  value={accNameFilter}
+                  onChange={(e) => setAccNameFilter(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-white font-mono placeholder-[#8B949E]/40 focus:border-indigo-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#8B949E] font-medium mb-1">normalcy</label>
+                <select
+                  value={accNormalcyFilter}
+                  onChange={(e) => setAccNormalcyFilter(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-white focus:border-indigo-500 focus:outline-hidden"
+                >
+                  <option value="">All (Debit & Credit)</option>
+                  <option value="debit">debit</option>
+                  <option value="credit">credit</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[#8B949E] font-medium mb-1">ledger_id</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 1b8d2983-4a25-46b0-95b7-[#8B949E]"
+                  value={accLedgerIdFilter}
+                  onChange={(e) => setAccLedgerIdFilter(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-1.5 text-white font-mono placeholder-[#8B949E]/40 focus:border-indigo-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#8B949E] font-medium mb-1">metadata (Key = Val)</label>
+                <div className="flex gap-1.5">
+                  <input
+                    type="text"
+                    placeholder="Type"
+                    value={accMetadataKey}
+                    onChange={(e) => setAccMetadataKey(e.target.value)}
+                    className="w-1/2 bg-[#0d1117] border border-[#30363D] rounded-lg px-2 py-1.5 text-white font-mono text-[11px]"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Loan"
+                    value={accMetadataVal}
+                    onChange={(e) => setAccMetadataVal(e.target.value)}
+                    className="w-1/2 bg-[#0d1117] border border-[#30363D] rounded-lg px-2 py-1.5 text-white font-mono text-[11px]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-[#30363D]">
+              <button
+                onClick={fetchLedgerAccounts}
+                disabled={loadingAccounts}
+                className="flex items-center space-x-2 px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md shadow-cyan-950/40 transition-all border border-cyan-400/40 disabled:opacity-50"
+              >
+                <Play className={`w-3.5 h-3.5 fill-white ${loadingAccounts ? 'animate-pulse' : ''}`} />
+                <span>{loadingAccounts ? 'Querying Accounts...' : 'Execute List Ledger Accounts Request'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Accounts Grid */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Database className="w-4 h-4 text-cyan-400" />
+                <span>Modern Treasury Ledger Accounts ({ledgerAccounts.length})</span>
+              </h3>
+              <span className="text-xs text-[#8B949E]">
+                Auto-synced into QuickBooks Autonomous Bridge
+              </span>
+            </div>
+
+            {accountsError && (
+              <div className="p-4 rounded-xl bg-red-950/30 border border-red-500/40 text-red-300 text-xs">
+                {accountsError}
+              </div>
+            )}
+
+            {ledgerAccounts.length === 0 ? (
+              <div className="bg-[#161B22] rounded-xl border border-[#30363D] p-8 text-center text-xs text-[#8B949E]">
+                No ledger accounts found matching parameters.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {ledgerAccounts.map((acc: any) => (
+                  <div
+                    key={acc.id}
+                    className="bg-[#161B22] rounded-xl border border-[#30363D] hover:border-cyan-500/50 p-4 space-y-3 text-xs"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <h4 className="font-bold text-white text-sm">{acc.name}</h4>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                            acc.normalcy === 'credit'
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                              : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                          }`}>
+                            {acc.normalcy}
+                          </span>
+                        </div>
+                        <p className="text-[#8B949E] text-[11px] font-mono mt-0.5">ID: {acc.id}</p>
+                      </div>
+
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#0d1117] text-cyan-300 border border-[#30363D]">
+                        Lock V{acc.lock_version}
+                      </span>
+                    </div>
+
+                    {/* Balances Display Grid */}
+                    <div className="grid grid-cols-3 gap-2 bg-[#0d1117] p-2.5 rounded-lg border border-[#30363D] text-[11px] font-mono">
+                      <div>
+                        <p className="text-[#8B949E] text-[10px]">Pending Balance</p>
+                        <p className="text-amber-300 font-bold">${(acc.balances.pending_balance.amount / 100).toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[#8B949E] text-[10px]">Posted Balance</p>
+                        <p className="text-emerald-400 font-bold">${(acc.balances.posted_balance.amount / 100).toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[#8B949E] text-[10px]">Available Balance</p>
+                        <p className="text-indigo-300 font-bold">${(acc.balances.available_balance.amount / 100).toFixed(2)}</p>
+                      </div>
+                    </div>
+
+                    {/* Metadata & QBO Ribbon */}
+                    <div className="flex items-center justify-between text-[11px] pt-1 border-t border-[#30363D]">
+                      <div className="flex items-center space-x-1 text-emerald-400">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Synced to QBO</span>
+                      </div>
+                      <span className="text-[#8B949E] font-mono text-[10px]">
+                        Ledger: {acc.ledger_id.slice(0, 16)}...
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* CREATE LEDGER TRANSACTION TAB VIEW (POST /api/ledger_transactions) */}
+      {activeConsoleTab === 'create_transaction' && (
+        <div className="space-y-5">
+          <div className="bg-[#161B22] rounded-xl border border-emerald-500/40 p-5 shadow-lg space-y-4">
+            <div className="flex items-center justify-between border-b border-[#30363D] pb-3">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-emerald-400" />
+                  <span>Create Ledger Transaction API Reference (POST /ledger_transactions)</span>
+                </h3>
+                <p className="text-xs text-[#8B949E] mt-1">
+                  Create a double-entry accounting transaction across Modern Treasury ledger accounts and lock directly into QuickBooks Autonomous Bridge.
+                </p>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                POST /api/ledger_transactions
+              </span>
+            </div>
+
+            <form onSubmit={handleCreateTransaction} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-[#8B949E] font-medium mb-1">status *</label>
+                  <select
+                    value={txStatus}
+                    onChange={(e) => setTxStatus(e.target.value as any)}
+                    className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-2 text-white font-bold focus:border-emerald-500 focus:outline-hidden"
+                  >
+                    <option value="posted">posted</option>
+                    <option value="pending">pending</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[#8B949E] font-medium mb-1">external_id *</label>
+                  <input
+                    type="text"
+                    required
+                    value={txExternalId}
+                    onChange={(e) => setTxExternalId(e.target.value)}
+                    className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-2 text-white font-mono focus:border-emerald-500 focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[#8B949E] font-medium mb-1">effective_at (ISO 8601)</label>
+                  <input
+                    type="text"
+                    value={txEffectiveAt}
+                    onChange={(e) => setTxEffectiveAt(e.target.value)}
+                    className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-2 text-white font-mono focus:border-emerald-500 focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[#8B949E] font-medium mb-1">description</label>
+                  <input
+                    type="text"
+                    value={txDescription}
+                    onChange={(e) => setTxDescription(e.target.value)}
+                    className="w-full bg-[#0d1117] border border-[#30363D] rounded-lg px-3 py-2 text-white focus:border-emerald-500 focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              {/* Ledger Entries Box */}
+              <div className="p-4 rounded-xl bg-[#0d1117] border border-[#30363D] space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
+                    <Layers className="w-4 h-4 text-indigo-400" />
+                    <span>ledger_entries (Minimum 2 Balanced Entries Required)</span>
+                  </h4>
+                  <span className="text-[11px] font-mono text-emerald-400 font-bold">
+                    Total Debit (${(txDebitAmount / 100).toFixed(2)}) == Total Credit (${(txCreditAmount / 100).toFixed(2)})
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                  {/* Entry 1: Debit */}
+                  <div className="p-3 rounded-lg bg-[#161B22] border border-indigo-500/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-indigo-300">Entry 1 (Debit)</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-500/20 text-indigo-300 font-bold">
+                        DEBIT
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-[#8B949E] mb-1">ledger_account_id</label>
+                      <input
+                        type="text"
+                        required
+                        value={txDebitAccId}
+                        onChange={(e) => setTxDebitAccId(e.target.value)}
+                        className="w-full bg-[#0d1117] border border-[#30363D] rounded px-2.5 py-1.5 text-white font-mono text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-[#8B949E] mb-1">amount (in cents, e.g. 100 = $1.00)</label>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        value={txDebitAmount}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setTxDebitAmount(val);
+                          setTxCreditAmount(val); // Keep balanced
+                        }}
+                        className="w-full bg-[#0d1117] border border-[#30363D] rounded px-2.5 py-1.5 text-white font-mono text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Entry 2: Credit */}
+                  <div className="p-3 rounded-lg bg-[#161B22] border border-emerald-500/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-emerald-300">Entry 2 (Credit)</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 font-bold">
+                        CREDIT
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-[#8B949E] mb-1">ledger_account_id</label>
+                      <input
+                        type="text"
+                        required
+                        value={txCreditAccId}
+                        onChange={(e) => setTxCreditAccId(e.target.value)}
+                        className="w-full bg-[#0d1117] border border-[#30363D] rounded px-2.5 py-1.5 text-white font-mono text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-[#8B949E] mb-1">amount (in cents, e.g. 100 = $1.00)</label>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        value={txCreditAmount}
+                        onChange={(e) => setTxCreditAmount(Number(e.target.value))}
+                        className="w-full bg-[#0d1117] border border-[#30363D] rounded px-2.5 py-1.5 text-white font-mono text-xs"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
+
+              {txError && (
+                <div className="p-3.5 rounded-xl bg-red-950/30 border border-red-500/40 text-red-300 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{txError}</span>
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={creatingTransaction}
+                  className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/50 transition-all border border-emerald-400/40 disabled:opacity-50"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span>{creatingTransaction ? 'Posting Double-Entry Transaction...' : 'Post Ledger Transaction'}</span>
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-      </div>
+
+          {/* Resulting Transaction Display */}
+          {createdTxResult && (
+            <div className="bg-[#161B22] rounded-xl border border-emerald-500/40 p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-[#30363D] pb-3">
+                <div className="flex items-center space-x-2 text-emerald-400 font-bold text-sm">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>Transaction Posted Successfully (201 Created)</span>
+                </div>
+                <span className="font-mono text-xs text-indigo-300 bg-indigo-950/40 px-2.5 py-1 rounded border border-indigo-500/30">
+                  Transaction ID: {createdTxResult.id}
+                </span>
+              </div>
+
+              <div className="bg-[#0d1117] p-4 rounded-xl border border-[#30363D] font-mono text-xs space-y-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
+                  <div><span className="text-[#8B949E]">Status:</span> <span className="text-emerald-400 font-bold">{createdTxResult.status}</span></div>
+                  <div><span className="text-[#8B949E]">External ID:</span> <span className="text-indigo-300">{createdTxResult.external_id}</span></div>
+                  <div><span className="text-[#8B949E]">Ledger ID:</span> <span className="text-cyan-300">{createdTxResult.ledger_id}</span></div>
+                  <div><span className="text-[#8B949E]">QBO Lock:</span> <span className="text-emerald-400 font-bold">ACTIVE</span></div>
+                </div>
+
+                <div className="pt-2 border-t border-[#30363D]">
+                  <p className="text-[#8B949E] text-[10px] mb-1 font-sans font-bold">Resulting Ledger Account Balances Updated:</p>
+                  <pre className="text-emerald-300 text-[11px] overflow-x-auto">
+                    {JSON.stringify(createdTxResult.resulting_ledger_account_balances, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Code Generator & cURL Reference */}
       <div className="bg-[#161B22] rounded-xl border border-[#30363D] p-5 shadow-sm space-y-4">

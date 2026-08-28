@@ -1,8 +1,8 @@
 import React from 'react';
-import { Shield, Key, CheckCircle2, AlertCircle, RefreshCw, Code2, PlayCircle, BookOpen, Sparkles, Plus, Terminal, Layers, Zap, CreditCard, Lock, Building2 } from 'lucide-react';
+import { Shield, Key, CheckCircle2, AlertCircle, RefreshCw, Code2, PlayCircle, BookOpen, Sparkles, Plus, Terminal, Layers, Zap, CreditCard, Lock, Building2, ShoppingCart, Globe } from 'lucide-react';
 import { IntuitConfig } from '../types';
 
-export type MainTabType = 'runner' | 'auto-bridge' | 'bridge' | 'moderntreasury' | 'chase' | 'finicity' | 'ai-ingest' | 'forms' | 'curl' | 'autonomous' | 'scaffolder' | 'scopes' | 'portal' | 'docs-hub';
+export type MainTabType = 'runner' | 'ai-buyer' | 'wu-psd2' | 'auto-bridge' | 'bridge' | 'paypal' | 'moderntreasury' | 'chase' | 'finicity' | 'ai-ingest' | 'forms' | 'curl' | 'autonomous' | 'scaffolder' | 'scopes' | 'portal' | 'docs-hub';
 
 interface NavbarProps {
   activeTab: MainTabType;
@@ -58,6 +58,34 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <button
+              id="tab-ai-buyer-btn"
+              onClick={() => setActiveTab('ai-buyer')}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                activeTab === 'ai-buyer'
+                  ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white shadow-xs border border-emerald-400 font-bold'
+                  : 'text-emerald-300 hover:text-white bg-emerald-950/40 border border-emerald-500/40'
+              }`}
+            >
+              <ShoppingCart className="w-3.5 h-3.5 text-emerald-300" />
+              <span>AI Buyer</span>
+              <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-400/20 text-emerald-300 font-bold">PROCURE</span>
+            </button>
+
+            <button
+              id="tab-wu-psd2-btn"
+              onClick={() => setActiveTab('wu-psd2')}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                activeTab === 'wu-psd2'
+                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-xs border border-amber-400 font-bold'
+                  : 'text-amber-300 hover:text-white bg-amber-950/40 border border-amber-500/40'
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5 text-amber-400" />
+              <span>WU PSD2 Portal</span>
+              <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-400/20 text-amber-300 font-bold">eIDAS</span>
+            </button>
+
+            <button
               id="tab-auto-bridge-btn"
               onClick={() => setActiveTab('auto-bridge')}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
@@ -83,6 +111,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Zap className="w-3.5 h-3.5 text-emerald-400" />
               <span>Command Bridge</span>
               <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-bold">PRO</span>
+            </button>
+
+            <button
+              id="tab-paypal-btn"
+              onClick={() => setActiveTab('paypal')}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                activeTab === 'paypal'
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-xs border border-blue-400 font-semibold'
+                  : 'text-cyan-300 hover:text-white bg-blue-950/40 border border-blue-500/30'
+              }`}
+            >
+              <CreditCard className="w-3.5 h-3.5 text-cyan-400" />
+              <span>PayPal Hub</span>
+              <span className="px-1.5 py-0.2 rounded text-[10px] bg-cyan-500/20 text-cyan-300 font-bold">CARDS</span>
             </button>
 
             <button
@@ -279,7 +321,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Mobile Tab Bar */}
         <div className="flex md:hidden items-center space-x-1.5 overflow-x-auto py-2 border-t border-[#30363D]">
           {[
+            { id: 'ai-buyer', label: '🛒 AI Buyer & Procure', highlight: true },
+            { id: 'wu-psd2', label: '🌍 WU PSD2 eIDAS Portal', highlight: true },
             { id: 'auto-bridge', label: '🔒 Auto QBO Bridge', highlight: true },
+            { id: 'paypal', label: '💳 PayPal Sandbox & Cards', highlight: true },
             { id: 'portal', label: '🔑 Dev Portal & Tokens', highlight: true },
             { id: 'moderntreasury', label: '🏛️ Modern Treasury Ledgers', highlight: true },
             { id: 'bridge', label: '⚡ Command Bridge' },
