@@ -532,36 +532,29 @@ googleServiceKeyRouter.post('/verify-key', (req: Request, res: Response) => {
  * Return a formatted .env block with current Google Service Account & HMAC keys
  */
 googleServiceKeyRouter.get('/service-account/env-export', (req: Request, res: Response) => {
-  const maskedPrivateKey = activeServicePrincipal.privateKey
-    ? '-----BEGIN PRIVATE KEY-----\\n••••••••[SECURE_RSA_KEY_PROTECTED]••••••••\\n-----END PRIVATE KEY-----'
-    : '';
-  const maskedHmacSecret = activeGoogleHmacKey.secret ? '••••••••' : '';
-  const maskedApiKey = activeServicePrincipal.apiKey ? '••••••••' : '';
-
   const envText = `# Google Cloud Service Account (General / RSA Signing)
 GOOGLE_PROJECT_ID="${activeServicePrincipal.projectId}"
 GOOGLE_CLIENT_EMAIL="${activeServicePrincipal.clientEmail}"
-GOOGLE_PRIVATE_KEY="${maskedPrivateKey}"
+GOOGLE_PRIVATE_KEY="${activeServicePrincipal.privateKey.replace(/\n/g, '\\n')}"
 
 # Google Cloud HMAC Service Account (Dedicated for HMAC Keys)
 GOOGLE_HMAC_SERVICE_ACCOUNT="${activeGoogleHmacKey.serviceAccountEmail}"
 GOOGLE_HMAC_ACCESS_ID="${activeGoogleHmacKey.accessId}"
-GOOGLE_HMAC_SECRET="${maskedHmacSecret}"
+GOOGLE_HMAC_SECRET="${activeGoogleHmacKey.secret}"
 
 # Gemini AI API Key
-GEMINI_API_KEY="${maskedApiKey}"
+GEMINI_API_KEY="${activeServicePrincipal.apiKey}"
 `;
 
   res.json({
     success: true,
     envText,
-    downloadProtected: true,
     servicePrincipal: {
       projectId: activeServicePrincipal.projectId,
       clientEmail: activeServicePrincipal.clientEmail,
       privateKeyId: activeServicePrincipal.privateKeyId,
       hasPrivateKey: Boolean(activeServicePrincipal.privateKey),
-      apiKey: maskedApiKey,
+      apiKey: activeServicePrincipal.apiKey,
     },
     hmacKey: {
       serviceAccount: activeGoogleHmacKey.serviceAccountEmail,
@@ -649,37 +642,30 @@ googleServiceKeyRouter.post('/service-account/configure', (req: Request, res: Re
       lastUsedAt: new Date().toISOString(),
     });
 
-    const maskedPrivateKey = newPrivateKey
-      ? '-----BEGIN PRIVATE KEY-----\\n••••••••[SECURE_RSA_KEY_PROTECTED]••••••••\\n-----END PRIVATE KEY-----'
-      : '';
-    const maskedHmacSecret = activeGoogleHmacKey.secret ? '••••••••' : '';
-    const maskedApiKey = newApiKey ? '••••••••' : '';
-
     const envText = `# Google Cloud Service Account (General / RSA Signing)
 GOOGLE_PROJECT_ID="${newProjectId}"
 GOOGLE_CLIENT_EMAIL="${newClientEmail}"
-GOOGLE_PRIVATE_KEY="${maskedPrivateKey}"
+GOOGLE_PRIVATE_KEY="${newPrivateKey.replace(/\n/g, '\\n')}"
 
 # Google Cloud HMAC Service Account (Dedicated for HMAC Keys)
 GOOGLE_HMAC_SERVICE_ACCOUNT="${newHmacSa}"
 GOOGLE_HMAC_ACCESS_ID="${activeGoogleHmacKey.accessId}"
-GOOGLE_HMAC_SECRET="${maskedHmacSecret}"
+GOOGLE_HMAC_SECRET="${activeGoogleHmacKey.secret}"
 
 # Gemini AI API Key
-GEMINI_API_KEY="${maskedApiKey}"
+GEMINI_API_KEY="${newApiKey}"
 `;
 
     res.json({
       success: true,
       message: 'Google Service Account & HMAC credentials successfully saved and activated in memory.',
       envText,
-      downloadProtected: true,
       servicePrincipal: {
         projectId: newProjectId,
         clientEmail: newClientEmail,
         privateKeyId: newPrivateKeyId,
         hasPrivateKey: Boolean(newPrivateKey),
-        apiKey: maskedApiKey,
+        apiKey: newApiKey,
       },
       hmacKey: {
         serviceAccount: newHmacSa,
@@ -731,30 +717,23 @@ googleServiceKeyRouter.post('/service-account/import-json', (req: Request, res: 
     activeGoogleHmacKey.serviceAccountEmail = clientEmail;
     activeGoogleHmacKey.projectId = projectId;
 
-    const maskedPrivateKey = privateKey
-      ? '-----BEGIN PRIVATE KEY-----\\n••••••••[SECURE_RSA_KEY_PROTECTED]••••••••\\n-----END PRIVATE KEY-----'
-      : '';
-    const maskedHmacSecret = activeGoogleHmacKey.secret ? '••••••••' : '';
-    const maskedApiKey = activeServicePrincipal.apiKey ? '••••••••' : '';
-
     const envText = `# Google Cloud Service Account (General / RSA Signing)
 GOOGLE_PROJECT_ID="${projectId}"
 GOOGLE_CLIENT_EMAIL="${clientEmail}"
-GOOGLE_PRIVATE_KEY="${maskedPrivateKey}"
+GOOGLE_PRIVATE_KEY="${privateKey ? privateKey.replace(/\n/g, '\\n') : ''}"
 
 # Google Cloud HMAC Service Account (Dedicated for HMAC Keys)
 GOOGLE_HMAC_SERVICE_ACCOUNT="${activeGoogleHmacKey.serviceAccountEmail}"
 GOOGLE_HMAC_ACCESS_ID="${activeGoogleHmacKey.accessId}"
-GOOGLE_HMAC_SECRET="${maskedHmacSecret}"
+GOOGLE_HMAC_SECRET="${activeGoogleHmacKey.secret}"
 
 # Gemini AI API Key
-GEMINI_API_KEY="${maskedApiKey}"
+GEMINI_API_KEY="${activeServicePrincipal.apiKey}"
 `;
 
     res.json({
       success: true,
       message: 'Google Cloud Service Account JSON imported and activated successfully.',
-      downloadProtected: true,
       parsed: {
         projectId,
         clientEmail,

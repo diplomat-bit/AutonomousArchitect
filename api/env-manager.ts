@@ -608,9 +608,8 @@ export function generateFullEnvFile(): string {
   ];
 
   let output = `# ==============================================================================
-# Unified Enterprise Multi-Bank Gateway Environment Template (.env)
+# Unified Enterprise Multi-Bank Gateway Environment Configuration (.env)
 # Generated: ${new Date().toISOString()}
-# NOTE: Secrets and Private Keys are masked to prevent unauthorized credential downloads.
 # ==============================================================================
 
 `;
@@ -623,8 +622,7 @@ export function generateFullEnvFile(): string {
     const catVars = vars.filter(v => v.category === cat.id);
     for (const v of catVars) {
       output += `# ${v.description}\n`;
-      const safeVal = v.isSecret ? (v.isSet ? '••••••••' : '') : v.value;
-      output += `${v.key}="${safeVal}"\n\n`;
+      output += `${v.key}="${v.value}"\n\n`;
     }
   }
 
@@ -632,29 +630,11 @@ export function generateFullEnvFile(): string {
 }
 
 /**
- * GET /api/env/download
- * Explicitly blocks environment variable file downloads for security compliance
- */
-envManagerRouter.get('/download', (req: Request, res: Response) => {
-  res.status(403).json({
-    success: false,
-    error: 'Environment variable downloads are permanently disabled by security policy to prevent credential exfiltration.',
-    code: 'DOWNLOAD_RESTRICTED',
-  });
-});
-
-/**
  * GET /api/env/all
  */
 envManagerRouter.get('/all', (req: Request, res: Response) => {
-  const rawItems = getAllEnvironmentVariables();
+  const items = getAllEnvironmentVariables();
   const rawEnvText = generateFullEnvFile();
-
-  // Sanitize secret values so plain-text credentials are never dumped over the wire
-  const items = rawItems.map(item => ({
-    ...item,
-    value: item.isSecret ? (item.isSet ? '••••••••' : '') : item.value,
-  }));
 
   const totalCount = items.length;
   const setVarsCount = items.filter(i => i.isSet).length;
@@ -665,7 +645,6 @@ envManagerRouter.get('/all', (req: Request, res: Response) => {
     totalCount,
     setVarsCount,
     missingVarsCount,
-    downloadProtected: true,
     items,
     rawEnvText,
   });
@@ -681,25 +660,19 @@ envManagerRouter.post('/update', (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Expected updates object with key/value pairs' });
     }
 
-    // Apply updates to runtime process.env (ignore placeholders like ••••••••)
+    // Apply updates to runtime process.env
     for (const [k, v] of Object.entries(updates)) {
-      if (typeof v === 'string' && !v.includes('••••••••')) {
+      if (typeof v === 'string') {
         process.env[k] = v.trim();
       }
     }
 
-    const rawItems = getAllEnvironmentVariables();
+    const items = getAllEnvironmentVariables();
     const rawEnvText = generateFullEnvFile();
-
-    const items = rawItems.map(item => ({
-      ...item,
-      value: item.isSecret ? (item.isSet ? '••••••••' : '') : item.value,
-    }));
 
     res.json({
       success: true,
-      message: `Updated environment variables successfully!`,
-      downloadProtected: true,
+      message: `Updated ${Object.keys(updates).length} environment variables successfully!`,
       items,
       rawEnvText,
     });

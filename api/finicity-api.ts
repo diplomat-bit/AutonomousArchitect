@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { lockCallIntoQuickBooks } from './intuit-api.js';
+import { lockCallIntoQuickBooks } from './intuit/quickbooks-bridge';
 
 export const finicityApiRouter = Router();
 
@@ -42,16 +42,13 @@ let cachedTransactions: any[] = [];
  * Generate .env format block for Finicity / Mastercard
  */
 export function generateFinicityEnvExport(c: FinicityConfigState): string {
-  const maskedSecret = c.partnerSecret ? '••••••••' : '';
-
   return `# ==============================================================================
-# Mastercard Open Finance / Finicity Integration (.env Template)
-# NOTE: Partner Secrets are masked to protect credentials against unauthorized export.
+# Mastercard Open Finance / Finicity Integration
 # ==============================================================================
 FINICITY_API_BASE_URL="${c.baseUrl}"
 FINICITY_APP_KEY="${c.appKey}"
 FINICITY_PARTNER_ID="${c.partnerId}"
-FINICITY_PARTNER_SECRET="${maskedSecret}"
+FINICITY_PARTNER_SECRET="${c.partnerSecret ? c.partnerSecret : ''}"
 FINICITY_APP_TOKEN="${c.appToken}"
 FINICITY_CUSTOMER_ID="${c.customerId}"
 FINICITY_CUSTOMER_USERNAME="${c.customerUsername}"

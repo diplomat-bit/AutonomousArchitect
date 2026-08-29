@@ -18,13 +18,11 @@ export const CodeGenerator: React.FC = () => {
   };
 
   const handleDownload = () => {
-    // If the file is an environment file, ensure it is safely tagged as .env.example
-    const safeFilename = currentFile.filename === '.env' ? '.env.example' : currentFile.filename;
     const blob = new Blob([currentFile.code], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = safeFilename;
+    a.download = currentFile.filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

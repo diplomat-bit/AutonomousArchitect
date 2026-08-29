@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { lockCallIntoQuickBooks } from './intuit-api.js';
+import { lockCallIntoQuickBooks } from './intuit/quickbooks-bridge';
 
 export const chaseApiRouter = Router();
 
@@ -461,18 +461,14 @@ function maskSensitiveHeaders(headers: Record<string, string>): Record<string, s
  * Generate full .env snippet for Chase
  */
 export function generateChaseEnvExport(c: ChaseConfigState): string {
-  const maskedAuth2 = c.authorization2 ? '••••••••' : '';
-  const maskedSecret = c.clientSecret ? '••••••••' : '';
-
   return `# ==============================================================================
-# Chase Open Banking & Loyalty Rewards API Config (.env Template)
-# NOTE: Confidential secrets & JWTs are masked to prevent credential leaks.
+# Chase Open Banking & Loyalty Rewards API Config
 # ==============================================================================
 CHASE_API_BASE_URL="${c.baseUrl}"
 CHASE_DEVELOPER_BASE_URL="${c.developerBaseUrl}"
 CHASE_PLAYGROUND_ID_TOKEN="${c.playgroundIdToken}"
 CHASE_AUTHORIZATION="${c.authorization}"
-CHASE_AUTHORIZATION2="${maskedAuth2}"
+CHASE_AUTHORIZATION2="${c.authorization2}"
 CHASE_TRACE_ID="${c.traceId}"
 CHASE_CHANNEL_TYPE="${c.channelType}"
 CHASE_ACCOUNT_REF_UUID="${c.accountReferenceUuid}"
@@ -485,7 +481,7 @@ CHASE_USD_REWARDS_AMOUNT="${c.usdRewardsTransactionAmount}"
 CHASE_REWARDS_CONVERSION_RATE="${c.rewardsConversionRate}"
 CHASE_MERCHANT_CATEGORY_CODE="${c.merchantCategoryCode}"
 CHASE_CLIENT_ID="${c.clientId}"
-CHASE_CLIENT_SECRET="${maskedSecret}"`;
+CHASE_CLIENT_SECRET="${c.clientSecret}"`;
 }
 
 /**
