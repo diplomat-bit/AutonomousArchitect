@@ -1,574 +1,398 @@
 # 👑 KRONOS // APEX FINANCIAL OPERATING SYSTEM
-### The Unified Autonomous Multi-Bank Ledger Gateway, Open Banking Protocol Engine, NextGenPSD2 eIDAS Cryptographic Suite, and Intuit QuickBooks Quantum Bridge
+### The Unified Autonomous Multi-Bank Ledger Gateway, Web3 Ethereum Notary, Open Banking Protocol Engine, and Intuit QuickBooks Quantum Bridge
 
 [![Engine: Gemini 3.7 Flash](https://img.shields.io/badge/Cognitive%20Core-Gemini%203.7%20Flash%20Thinking-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Web3: MetaMask & Ethereum](https://img.shields.io/badge/Ethereum-MetaMask%20Web3%20Notary%20%26%20On--Ramp-3C3C3D?style=for-the-badge&logo=ethereum&logoColor=white)](https://ethereum.org/)
+[![Amazon: APS PayFort](https://img.shields.io/badge/Amazon-Payment%20Services%20(APS)-FF9900?style=for-the-badge&logo=amazon&logoColor=black)](https://paymentservices.amazon.com/)
 [![QuickBooks Online: Accounting v3 & Payments v4](https://img.shields.io/badge/Intuit-Accounting%20v3%20%7C%20Payments%20v4-2CA01C?style=for-the-badge&logo=quickbooks&logoColor=white)](https://developer.intuit.com/)
 [![Modern Treasury: Double-Entry Ledgers](https://img.shields.io/badge/Modern%20Treasury-Double--Entry%20Ledgers%20v1-1A1F2C?style=for-the-badge&logo=moderntreasury&logoColor=white)](https://app.moderntreasury.com/)
+[![Citi: GCB US & AU Open Banking](https://img.shields.io/badge/Citi-GCB%20US%20%7C%20AU%20Open%20Banking-056DAE?style=for-the-badge&logo=citi&logoColor=white)](https://sandbox.apihub.citi.com/)
+[![New Relic: APM & OpenTelemetry](https://img.shields.io/badge/New%20Relic-APM%20%7C%20OpenTelemetry-1CE783?style=for-the-badge&logo=newrelic&logoColor=black)](https://newrelic.com/)
+[![Marqeta: Modern Card Issuing](https://img.shields.io/badge/Marqeta-Modern%20Card%20Issuing%20%26%20JIT-00D084?style=for-the-badge&logo=visa&logoColor=white)](https://www.marqeta.com/)
 [![Western Union: Berlin Group NextGenPSD2](https://img.shields.io/badge/Western%20Union-Berlin%20Group%20NextGenPSD2%20v1.3-FFCC00?style=for-the-badge&logo=westernunion&logoColor=black)](https://developer.westernunion.com/)
-[![Mastercard: Open Finance & Finicity](https://img.shields.io/badge/Mastercard-Open%20Finance%20%7C%20Finicity%20v2%2Fv3-EB001B?style=for-the-badge&logo=mastercard&logoColor=white)](https://developer.mastercard.com/)
-[![PayPal: REST v1 Identity & v2 Checkout](https://img.shields.io/badge/PayPal-OAuth%20v1%20%7C%20Orders%20v2-003087?style=for-the-badge&logo=paypal&logoColor=white)](https://developer.paypal.com/)
-[![Chase: Open Banking & Loyalty](https://img.shields.io/badge/Chase-Pay%20With%20Points%20%7C%20Open%20Banking-117ACA?style=for-the-badge&logo=chase&logoColor=white)](https://developer.chase.com/)
+[![Chase: Pay with Points & Loyalty](https://img.shields.io/badge/Chase-Pay%20with%20Points%20%26%20Loyalty-117ACA?style=for-the-badge&logo=chase&logoColor=white)](https://developer.chase.com/)
+[![Mastercard: Open Finance & Finicity](https://img.shields.io/badge/Mastercard-Open%20Finance%20%26%20Finicity-EB001B?style=for-the-badge&logo=mastercard&logoColor=white)](https://developer.mastercard.com/)
 [![Persistence: Google Cloud Firestore](https://img.shields.io/badge/Audit%20Storage-Google%20Cloud%20Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
 
 ---
 
-> ### ⚡ AN OPEN MANIFESTO ON FINANCIAL ARCHITECTURE
-> 
-> *While legacy banking conglomerates, Tier-1 consulting firms, and VC-subsidized fintechs spent fifteen years and billions of dollars duct-taping thirty disparate SaaS subscriptions, fractured webhook microservices, fragile CSV reconcilers, and brittle OAuth redirect screens...*
-> 
-> **This platform solves the entirety of global programmatic commerce, double-entry financial accounting, multi-bank aggregation, autonomous procurement, and cryptographic cross-border open banking within a single, coherent, mathematically sound zero-latency engine.**
-> 
-> If you are still manually reconciling bank statements, writing bespoke cron jobs to sync invoices, or wrestling with fractured API keys in postman collections, you are operating in a bygone era. Welcome to the Apex Tier of Financial Engineering.
+## ⚡ EXECUTIVE SUMMARY & SYSTEM OVERVIEW
 
----
+**Kronos Apex Financial Operating System** is a zero-latency, full-stack enterprise platform uniting decentralized Web3 protocols (MetaMask & Ethereum Blockchain), global merchant payment gateways (Amazon Payment Services / PayFort), Tier-1 commercial banking networks (Citi, Chase, Western Union, Modern Treasury, Marqeta), and automated corporate bookkeeping (Intuit QuickBooks Online).
 
-## 📑 TABLE OF EXHAUSTIVE SPECIFICATIONS
-
-1. [Architectural Supremacy & Dimensional Benchmark Matrix](#-architectural-supremacy--dimensional-benchmark-matrix)
-2. [Macro System Topology & Protocol Symphony](#-macro-system-topology--protocol-symphony)
-3. [Core Subsystem Deep Dives](#-core-subsystem-deep-dives)
-   - [Subsystem 1: Western Union NextGenPSD2 / Berlin Group eIDAS Cryptographic Engine](#1-western-union-nextgenpsd2--berlin-group-eidas-cryptographic-engine)
-   - [Subsystem 2: Modern Treasury High-Velocity Double-Entry Ledger Engine](#2-modern-treasury-high-velocity-double-entry-ledger-engine)
-   - [Subsystem 3: Autonomous AI Procurement & 3-Way Auto-Buyer Engine](#3-autonomous-ai-procurement--3-way-auto-buyer-engine)
-   - [Subsystem 4: Intuit QuickBooks Online Full-Spectrum Sync & Quantum Bridge](#4-intuit-quickbooks-online-full-spectrum-sync--quantum-bridge)
-   - [Subsystem 5: Mastercard Developers API & Finicity Open Finance 6-Step Pipeline](#5-mastercard-developers-api--finicity-open-finance-6-step-pipeline)
-   - [Subsystem 6: PayPal REST v1 Identity & v2 Checkout Order Orchestration](#6-paypal-rest-v1-identity--v2-checkout-order-orchestration)
-   - [Subsystem 7: Chase Pay-With-Points & Loyalty Gateway](#7-chase-pay-with-points--loyalty-gateway)
-   - [Subsystem 8: Gemini 3.7 Flash Cognitive Banking Ingestion & cURL Compiler](#8-gemini-37-flash-cognitive-banking-ingestion--curl-compiler)
-4. [Mathematical & Cryptographic Invariants](#-mathematical--cryptographic-invariants)
-5. [Complete API Schema Reference](#-complete-api-schema-reference)
-6. [Multi-Language SDK Masterclass](#-multi-language-sdk-masterclass)
-7. [Enterprise Security & Zero-Trust Architecture](#-enterprise-security--zero-trust-architecture)
-8. [Environment Variable Configuration & Deployment](#-environment-variable-configuration--deployment)
-
----
-
-## 🌌 Architectural Supremacy & Dimensional Benchmark Matrix
-
-| Dimension | Legacy Enterprise Stack | Traditional Fintech Aggregator | **Kronos Apex Financial Operating System** |
-| :--- | :--- | :--- | :--- |
-| **System Architecture** | 12+ separate vendor contracts, fragmented SaaS portals | Monolithic polling services with brittle webhooks | **Unified Express Gateway + React 18 / Tailwind Quantum Control Surface** |
-| **General Ledger Parity** | Nightly batch reconciliation with 24-48h drift | Single-entry flat SQL records | **Real-Time Double-Entry Parity with strict Debit/Credit Invariant Proofs** |
-| **Open Banking / PSD2** | Outsourced to regional brokers with per-call markup | Manual sandbox registration, no cryptographic signing | **Native Berlin Group v1.3/v1.4 eIDAS QSEAL RSA-SHA256 On-the-Fly Digest Minter** |
-| **Procurement Cycle** | Manual PO creation -> Email invoice -> Manual wire -> Manual ERP entry (Avg: 6 days) | Rigid rule engines requiring human approval loops | **Autonomous AI Auto-Buyer: Natural Language to 3-Way Matched Multi-Rail Ledger Settlement in <800ms** |
-| **Intuit QuickBooks Integration** | Fragmented endpoints, manual field mapping, fragile tokens | Read-only reporting pipelines | **Full-Spectrum Recursive Pull All + Auto Modern Treasury Ledger Provisioning + Payments v4 ACH** |
-| **Bank Aggregation** | Static scraping with high failure rates | Rigid static CSV upload templates | **Mastercard Finicity 6-Step Lifecycle + Gemini 3.7 Flash Unstructured Statement OCR/Ingest** |
-| **Card & Payment Rails** | Separate Stripe/Braintree/PayPal codebases | Isolated checkout buttons without GL connection | **Native PayPal v1 OAuth/Client Token + v2 Orders/Capture + Chase PWP Loyalty Integration** |
-| **Credential Security** | Client-side leaked tokens or scattered `.env` files | Centralized third-party vault vulnerability | **Zero Browser Leakage Architecture: Strict Server-Side Proxy Isolation + Firestore State Hash Locks** |
-
----
-
-## 🏛️ Macro System Topology & Protocol Symphony
+Powered by the **Gemini 3.7 Flash Cognitive Core**, Kronos autonomously handles enterprise procurement, three-way invoice matching, cross-rail liquidity transfers, multi-signature blockchain notarization, and cryptographic reconciliation without manual friction.
 
 ```
-                                 ┌────────────────────────────────────────────────────────┐
-                                 │     Universal React 18 + Tailwind UI Operator Deck     │
-                                 │       [16 Modular High-Velocity Financial Views]       │
-                                 └───────────────────────────┬────────────────────────────┘
-                                                             │ HTTPS (JSON / SSE Stream)
-                                                             │
-                                   ┌─────────────────────────┴────────────────────────┐
-                                   │      Express Enterprise API Gateway (Port 3000)  │
-                                   │   [Zero Browser Credential Leakage Architecture] │
-                                   └──────────┬───────────┬───────────┬───────────┬───┘
-                                              │           │           │           │
-                 ┌────────────────────────────┴──┐        │           │        ┌──┴────────────────────────────┐
-                 │                               │        │           │        │                               │
-     ┌───────────▼────────────┐      ┌───────────▼────────┴─┐     ┌───▼────────┴───────────┐       ┌───────────▼────────────┐
-     │  Western Union PSD2    │      │  Intuit QuickBooks   │     │ Modern Treasury        │       │  PayPal Sandbox        │
-     │  Berlin Group v1.3/1.4 │      │  OAuth2 • Accounting │     │ Double-Entry Ledgers   │       │  OAuth v1 • Orders v2  │
-     │  eIDAS QSEAL Engine    │      │  Payments v4 • SQL   │     │ Real-Time Balances     │       │  Authorize & Capture   │
-     └───────────┬────────────┘      └───────────┬──────────┘     └───────────┬────────────┘       └───────────┬────────────┘
-                 │                               │                            │                                │
-  ┌──────────────┴──────────────┐    ┌───────────┴───────────┐    ┌───────────┴────────────┐       ┌───────────┴────────────┐
-  │ • SHA-256 Request Digest    │    │ • Full Spectrum Sync  │    │ • /api/ledgers         │       │ • /v1/oauth2/token     │
-  │ • RSA-SHA256 HTTP Signatures│    │ • Accounting v3 Engine│    │ • /api/ledger_accounts │       │ • /v1/identity/userinfo│
-  │ • AISP / PISP / PIISP / KYC │    │ • Payments v4 Charges │    │ • Parity Transactions  │       │ • /v2/checkout/orders  │
-  │ • Cross-Border MTCN Remit   │    │ • Auto-Chart Provision│    │ • Optimistic Locks     │       │ • Confirm Payment Src  │
-  └─────────────────────────────┘    └───────────────────────┘    └────────────────────────┘       └────────────────────────┘
-                 │                               │                            │                                │
-                 └───────────────────────────────┼────────────────────────────┴────────────────────────────────┘
-                                                 │
-                                            ┌────┴────────────────────────────┐
-                                            │   Gemini 3.7 Flash AI Engine    │
-                                            │ • Autonomous Buyer Orchestrator │
-                                            │ • Statement OCR & cURL Ingest   │
-                                            │ • NL-to-Accounting SQL Compiler │
-                                            └────────────────────┬────────────┘
-                                                                 │
-                                            ┌────────────────────▼─────────────────┐
-                                            │  Google Cloud Firestore State Fabric │
-                                            │ • Cryptographic Audit Proof Hashes   │
-                                            │ • Encrypted Token Vaults & Journals  │
-                                            └──────────────────────────────────────┘
++----------------------------------------------------------------------------------------------------+
+|                                    KRONOS APEX CONTROL PLANE                                       |
++----------------------------------------------------------------------------------------------------+
+|   MetaMask & Ethereum Notary  |  Amazon APS / PayFort  |  Citi Open Banking  |  QuickBooks Bridge   |
+|   Modern Treasury Ledgers     |  New Relic APM         |  Marqeta Cards      |  Western Union PSD2  |
+|   Chase Loyalty & Points      |  Mastercard Finicity   |  Azure Arc Master   |  O'Callaghan Trader  |
++----------------------------------------------------------------------------------------------------+
+                                                  │
+                                                  ▼
++----------------------------------------------------------------------------------------------------+
+|                              SERVER-SIDE REST & GRAPHQL GATEWAY (Port 3000)                         |
+|   • HMAC-SHA256 / SHA-384 Hash Verification    • OAuth 2.0 PKCE / DCR Handshake                   |
+|   • Ethers.js Calldata Hex Notary Encoder      • Real-time Double-Entry Balancing Engine           |
+|   • In-Memory Encrypted Token Vault             • Universal Financial Document Ingestion Parser     |
++----------------------------------------------------------------------------------------------------+
+       │                          │                             │                          │
+       ▼                          ▼                             ▼                          ▼
++---------------+        +------------------+         +--------------------+     +-------------------+
+|  BLOCKCHAIN   |        | GLOBAL BANKING   |         | ACCOUNTING & ERP   |     | COGNITIVE CLOUD   |
+| • Ethereum    |        | • Citi GCB & AU  |         | • QuickBooks Online|     | • Gemini 3.7 Flash|
+| • Sepolia     |        | • Modern Treasury|         |   (Accounting v3 & |     | • New Relic APM   |
+| • Holesky     |        | • Chase & WU     |         |    Payments v4)    |     | • Azure Arc Vault |
+| • Arbitrum    |        | • Marqeta & Visa |         | • Double-Entry J/E |     | • Cloud Firestore |
++---------------+        +------------------+         +--------------------+     +-------------------+
 ```
 
 ---
 
-## ⚡ Core Subsystem Deep Dives
+## 🏛️ COMPLETE MODULE & CAPABILITY CATALOG
+
+### 1. 🦊 MetaMask & Ethereum Blockchain Notary & On-Ramp
+* **Web3 Wallet Connection**: Native browser integration with MetaMask and EIP-1193 providers via `ethers.js v6`. Real-time listener for `accountsChanged`, `chainChanged`, and live ETH/USD balance polling.
+* **Multi-Network Compatibility**: Instant network switching across **Ethereum Mainnet**, **Sepolia Testnet**, **Holesky**, **Arbitrum One**, **Polygon PoS**, and **Localhost/Anvil**.
+* **Cryptographic Blockchain Notary**: Anchors financial events (QBO Journal Entries, Citi NPP Wire Transfers, Amazon APS Orders, Corporate Invoices) directly onto Ethereum calldata with deterministic SHA-256 payload digests.
+* **Dual Execution Modes**: 
+  - *Client-Side MetaMask Signing*: Direct popup signing via connected user wallet.
+  - *Automated Enterprise Relayer*: Zero-gas-fee simulated server relayer for automated high-volume notarization batches.
+* **Bank-Funded Ethereum On-Ramp**: Purchase Ethereum directly using linked bank liquidity (**Citibank Premier Checking**, **Chase Treasury**, **Modern Treasury USD Vault**, **Western Union PSD2**). Automatically debits bank balances, records a `#1080 Digital Currency Asset` in QuickBooks Online, and transmits ETH on-chain.
+* **1-Click Batch Notarization**: Automatically scans all unanchored ledger events across the operating system and commits them to the blockchain in a single atomic sequence.
 
 ---
 
-### 1. Western Union NextGenPSD2 / Berlin Group eIDAS Cryptographic Engine
-
-The European Union's PSD2 Directive (Directive (EU) 2015/2366) and the Berlin Group NextGenPSD2 standard mandate military-grade cryptographic integrity for all Account Information Service Providers (AISP), Payment Initiation Service Providers (PISP), and Payment Instrument Issuer Service Providers (PIISP/CBPII). 
-
-This platform implements the complete cryptographic signature lifecycle natively in TypeScript and server-side runtime, complying with RFC 7231, RFC 4122, and ETSI TS 119 495 eIDAS QSEAL standards.
-
-```
-Request Body (JSON)
-        │
-        ▼
-[ SHA-256 Hash ] ────► Base64 Encode ────► Digest Header ("SHA-256=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=")
-        │
-        ├────────────────────────────────┐
-        ▼                                ▼
-[ UUIDv4 Minter ]                [ RFC 7231 Date ]
-  X-Request-ID Header              Date Header ("Fri, 28 Aug 2026 21:01:59 GMT")
-        │                                │
-        └────────────────┬───────────────┘
-                         ▼
-             [ Canonical Signing String ]
-             "x-request-id: <uuid>\ndigest: <digest>\ndate: <httpdate>"
-                         │
-                         ▼
-             [ RSA-SHA256 Private Key Sign ]
-                         │
-                         ▼
-             [ Base64 Signature Output ]
-                         │
-                         ▼
-             HTTP Header: Signature keyId="...",algorithm="rsa-sha256",headers="...",signature="..."
-```
-
-#### Cryptographic Components:
-1. **RFC 4122 Request Correlation (`X-Request-ID`)**: Every interaction is tagged with a cryptographically random UUIDv4.
-2. **Deterministic Payload Digest (`Digest`)**: Calculated via:
-   $$\text{Digest} = \text{"SHA-256="} \parallel \text{Base64}(\text{SHA-256}(\text{UTF8}(\text{JSON Payload})))$$
-3. **HTTP-Date Timestamp (`Date`)**: Strictly adhering to RFC 7231 formatted strings (e.g. `Time.now.httpdate` / `new Date().toUTCString()`).
-4. **Certificate Embedding (`TPP-Signature-Certificate`)**: Transmits the X.509 eIDAS Qualified Electronic Seal (QSEAL) Certificate in single-line Base64 format.
-5. **Canonical Signature Assembly (`Signature`)**:
-   ```http
-   Signature: keyId="SN=0,DN=/organizationIdentifier=TppSaltTest000/CN=certSIGNSALTTEST Web CA/O=SaltTest/C=RO",algorithm="rsa-sha256",headers="x-request-id digest date",signature="Q2Fwc3VsYXRlZFNpZ25hdHVyZVBheWxvYWRFeGFtcGxlTXVzdEJlQ29tcHV0ZWRWaWFSZXFs..."
-   ```
-
-#### Supported Western Union PSD2 Service Domains:
-- **AISP (Account Information)**: Real-time IBAN queries, multi-currency balances (EUR, USD, GBP, CHF), and booked ledger transaction queries.
-- **PISP (Payment Initiation)**: SEPA Credit Transfers and Western Union Cross-Border Remittances with instant MTCN (Money Transfer Control Number) dispatch.
-- **PIISP / CBPII (Card-Based Confirmation of Funds)**: Real-time account liquidity checks prior to card authorization.
-- **KYC & Identity**: Customer validation, PEP (Politically Exposed Persons) checks, and eIDAS compliance profiles.
-- **Consent Lifecycle**: Explicit 90-day Strong Customer Authentication (SCA) consent creation, status polling, and revocation.
-
-#### Complete Western Union PSD2 API Endpoint Matrix (`/api/wu-psd2/*`):
-
-| HTTP Method | Route | Category | Description & Specification |
-|:---|:---|:---|:---|
-| `GET` | `/api/wu-psd2/config` | Portal Config | Returns Berlin Group NextGenPSD2 gateway metadata, environment variables, authentication status, registered eIDAS certificates, and default TPP configurations. |
-| `POST` | `/api/wu-psd2/auth/login` | Developer Auth | Authenticates developer email/password against the WU Developer Portal and dispatches a 6-digit SCA 2FA OTP challenge. |
-| `POST` | `/api/wu-psd2/auth/verify-otp` | SCA Verification | Validates the 6-digit OTP verification token and issues an active PSD2 developer session (`wu_sess_*`). |
-| `POST` | `/api/wu-psd2/certificates/generate` | eIDAS PKI | Generates dynamic 2048-bit RSA eIDAS QSEAL X.509 certificates conforming to ETSI TS 119 495 with decimal serial numbers. |
-| `POST` | `/api/wu-psd2/certificates/import` | eIDAS PKI | Imports user-supplied X.509 PEM certificates and RSA private keys into the active signing keychain. |
-| `POST` | `/api/wu-psd2/generate-signature` | Cryptographic Core | Computes standard Berlin Group HTTP headers (`Digest`, `Date`, `X-Request-ID`, `TPP-Signature-Certificate`, and `Signature` string). |
-| `POST` | `/api/wu-psd2/tpp/register` | TPP Onboarding | Onboards Third Party Providers (TPPs) into the Western Union Sandbox with role-scoped OAuth2 client credentials (`AISP`, `PISP`, `PIISP`, `COMBINED`). |
-| `GET` | `/api/wu-psd2/v1/accounts` | AISP | Retrieves active Western Union customer digital payment accounts, multi-currency IBANs, and status flags. |
-| `GET` | `/api/wu-psd2/v1/accounts/:id/balances` | AISP | Queries real-time `interimAvailable`, `closingBooked`, and multi-currency liquidity for an account resource ID. |
-| `GET` | `/api/wu-psd2/v1/accounts/:id/transactions` | AISP | Returns booked and pending transaction ledgers with structured remittance details and purpose codes. |
-| `GET` | `/api/wu-psd2/v1/kyc` | AISP KYC | Returns eIDAS-verified customer profile, PEP screening status, risk rating, and address verification. |
-| `POST` | `/api/wu-psd2/v1/payments/sepa-credit-transfers` | PISP | Initiates an instant Berlin Group SEPA Credit Transfer with automatic ledger booking and `ACCP` settlement status. |
-| `POST` | `/api/wu-psd2/v1/payments/cross-border-transfers` | PISP Remittance | Executes a global Western Union cross-border transfer with live FX conversion and instant 10-digit MTCN generation. |
-| `POST` | `/api/wu-psd2/v1/funds-confirmations` | PIISP / CBPII | Validates cardholder available fund balances in real-time prior to debit card authorization. |
-| `GET` | `/api/wu-psd2/v1/consents` | SCA Consent | Lists all active 90-day Strong Customer Authentication consents granted by Account Servicing Payment Service Providers (ASPSPs). |
-| `POST` | `/api/wu-psd2/v1/consents` | SCA Consent | Provisions a new NextGenPSD2 AISP/PISP multi-service recurring access consent. |
+### 2. 🛒 Amazon Payment Services (APS / PayFort) & Autonomous AI Buyer
+* **Merchant Gateway Integration**: Full implementation of Amazon Payment Services (PayFort) Fort API v1.0 / v2.0 with Merchant Identifier, Access Code, SHA Request/Response Passphrases, and Currency selection (USD, AED, SAR, EUR, GBP).
+* **Cryptographic Signature Engine**: Automated generation of `SHA-256` / `SHA-512` / `SHA-384` signature strings using canonical alphabetical parameter sorting.
+* **Autonomous AI Buyer**: Natural language procurement engine powered by Gemini 3.7 Flash:
+  1. *Prompt Parsing*: Converts statements like *"Procure 25 Dell UltraSharp 4K monitors for Dev Team"* into structured PO items.
+  2. *Amazon APS Authorization*: Executes payment tokenization and card pre-authorization.
+  3. *QBO Quantum Mirroring*: Instantly creates matching Purchase Orders, Vendor Invoices, and Journal Entries in QuickBooks Online.
+* **Comprehensive Payment Rails**: Supports Credit/Debit Cards, Installments (EMI), ValU, MADA, Apple Pay, and 3-D Secure 2.0 flow simulations.
 
 ---
 
-### 2. Modern Treasury High-Velocity Double-Entry Ledger Engine
-
-In financial engineering, single-entry bookkeeping is malpractice. The platform implements an enterprise-grade double-entry ledger engine powered by the Modern Treasury specification.
-
-$$\sum_{i=1}^{n} \text{Debits}_i = \sum_{j=1}^{m} \text{Credits}_j$$
-
-```
-                               ┌───────────────────────────────────┐
-                               │  General Ledger (USD / Exponent 2)│
-                               └─────────────────┬─────────────────┘
-                                                 │
-                        ┌────────────────────────┴────────────────────────┐
-                        ▼                                                 ▼
-             ┌─────────────────────┐                           ┌─────────────────────┐
-             │ Ledger Account 1    │                           │ Ledger Account 2    │
-             │ Normalcy: DEBIT     │                           │ Normalcy: CREDIT    │
-             │ [Operating Cash]    │                           │ [Accounts Payable]  │
-             └──────────┬──────────┘                           └──────────┬──────────┘
-                        │                                                 │
-                        └───────────────────────┬─────────────────────────┘
-                                                │
-                                                ▼
-                               ┌───────────────────────────────────┐
-                               │  Atomic Double-Entry Transaction  │
-                               │  Debit: $250.00 | Credit: $250.00 │
-                               │  Parity Invariant: ZERO DELTA     │
-                               └───────────────────────────────────┘
-```
-
-#### Ledger Account Mechanics & Balancing Triad:
-Each ledger account maintains three distinct real-time balance metrics:
-- **`pending_balance`**: Represents in-flight transactions that have been initiated but not yet settled.
-- **`posted_balance`**: The immutable booked financial balance of all settled transactions.
-- **`available_balance`**: $\text{posted\_balance} - \text{pending\_debits}$, determining immediate liquidity.
-
-#### Automatic QuickBooks Chart of Accounts Synchronization:
-Triggering the `Pull All` mechanism automatically iterates every QuickBooks asset, liability, equity, income, and expense account, provisioning corresponding `ledger_account` nodes with mathematically matching normalcy (`credit` vs `debit`), locking versions, and cross-referenced metadata (`qbo_id`, `qbo_account_type`).
+### 3. 🏦 Citibank GCB Open Banking (US & Australia)
+* **US Partner Portal**: OAuth 2.0 authorization with Client Credentials, Dynamic Client Registration (DCR), and FDX v6 financial data standards.
+* **Australia CDR Open Banking**: Comprehensive support for Consumer Data Right (CDR) APIs and NPP Fast Payments with PayID resolution.
+* **Live Bank Capabilities**:
+  - *Account Aggregation*: Checking, Savings, Credit Cards, Line of Credit, and Investment balances.
+  - *Transfer Execution*: Internal account transfers, Domestic Wire/ACH, and International Wire with real-time tracking.
+  - *Credit Card Servicing*: Real-time statement balance, minimum due, available credit, and rewards balance.
+  - *Automated Lending & Offers*: Pre-approved credit limit upgrades, personal loans, and promotional balance transfers.
+* **TLS & Provenance Logs**: Full cURL transparency and SHA-384 cryptographic verification headers on all payload responses.
 
 ---
 
-### 3. Autonomous AI Procurement & 3-Way Auto-Buyer Engine
-
-Legacy procurement requires a procurement specialist to create a Purchase Order, wait for an invoice, manually match line items, issue a corporate card or ACH transfer, and post journal entries to the ERP. 
-
-The **Kronos Autonomous AI Auto-Buyer** reduces this entire 6-day friction loop to a **sub-second, single-prompt execution**:
-
-```
-[ User Prompt: "Procure 25 Dell UltraSharp 32-inch 4K Monitors for Engineering" ]
-                                      │
-                                      ▼
-                        ┌───────────────────────────┐
-                        │ Gemini 3.7 Flash Brain    │
-                        │ • Catalog & Vendor Lookup │
-                        │ • Tax & Shipping Calc     │
-                        │ • Multi-Rail Optimizer    │
-                        └─────────────┬─────────────┘
-                                      │
-       ┌──────────────────────────────┼──────────────────────────────┐
-       ▼                              ▼                              ▼
-┌──────────────┐              ┌──────────────┐              ┌─────────────────┐
-│ Purchase Ord │              │ Payment Rail │              │ ERP & GL Sync   │
-│ Generated    │              │ Executed     │              │ Double-Entry    │
-│ • PO-90412   │              │ • PayPal v2  │              │ • QBO Bill Post │
-│ • Dell Inc   │              │ • Chase Card │              │ • MT GL Debit   │
-│ • $19,975.00 │              │ • ACH Direct │              │ • MT Cash Credit│
-└──────────────┘              └──────────────┘              └─────────────────┘
-```
-
-#### The 3-Way Autonomous Matching Engine:
-1. **Natural Language Semantic Intent Parsing**: Gemini 3.7 Flash analyzes procurement requirements, extracting items, quantities, estimated units, vendor profiles, and general ledger categorization.
-2. **Multi-Rail Payment Routing**:
-   - **PayPal Orders v2**: Real-time order creation and immediate authorization/capture.
-   - **Chase Corporate Card**: Direct tokenized card charge with loyalty point parity.
-   - **Intuit Payments v4**: Direct ACH / E-Check debit against vendor bank accounts.
-   - **Modern Treasury Payout**: Real-time wire or FedNow payment against corporate treasury.
-3. **Simultaneous Ledger Reconciliation**: Instantly generates an authorized QuickBooks `Purchase` / `Bill` and executes an equal and offsetting double-entry `ledger_transaction` in Modern Treasury.
+### 4. 📗 Intuit QuickBooks Online Quantum Bridge
+* **Accounting API v3 & Payments API v4**: Native bidirectional sync for Invoices, Customers, Vendors, Bills, Payments, Journal Entries, Accounts, and Items.
+* **Recursive "Pull All" Orchestrator**: Deep-crawls entire QBO tenant data with automated pagination, schema normalization, and local caching.
+* **Quantum Bridge**: Automatically balances multi-currency transactions, maps external payment rails to QuickBooks Chart of Accounts, and creates cryptographically signed Journal Entries.
+* **Interactive Form Builder**: Visual UI to dispatch live API mutations directly to QuickBooks Online Sandbox and Production environments.
+* **cURL Command Terminal & Code Generator**: Generates executable Node.js, Python, cURL, and Go SDK snippets for any QuickBooks entity.
 
 ---
 
-### 4. Intuit QuickBooks Online Full-Spectrum Sync & Quantum Bridge
-
-The QuickBooks integration operates across both **Accounting API v3** and **Payments API v4** with zero manual overhead.
-
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        QuickBooks Quantum Bridge Engine                                │
-├──────────────────────────┬─────────────────────────────┬───────────────────────────────┤
-│ Accounting API v3 Engine │ Query & Scaffolder Studio   │ Payments API v4 Gateway       │
-├──────────────────────────┼─────────────────────────────┼───────────────────────────────┤
-│ • Accounts & Bank Feeds  │ • SQL Query Playground      │ • Card Tokenization (RSA-2048)│
-│ • Invoices & Estimates   │ • Natural Language to SQL   │ • Instant ACH Direct Debit    │
-│ • Customers & Vendors    │ • Batch Export Engine       │ • E-Check Settlement          │
-│ • Payments & Bills       │ • Multi-Language Codegen    │ • Fraud Risk Scoring          │
-│ • Journal Entries (GL)   │ • Schema Visualizer         │ • Auto-Reconciliation to GL   │
-└──────────────────────────┴─────────────────────────────┴───────────────────────────────┘
-```
-
-#### Full Spectrum "Pull All" Orchestration:
-With a single click or API trigger (`POST /api/bridge/pull-all`), the engine executes parallelized, rate-limit-aware queries fetching every entity across the company's chart of accounts, storing the normalized entities in an indexed cache and synchronizing them into Google Cloud Firestore.
+### 5. 🏛️ Modern Treasury Double-Entry Ledgers & Plaid Syndicate
+* **Double-Entry Mathematical Invariants**: Strict ledger conservation ($\sum \text{Debits} = \sum \text{Credits}$) preventing unallocated fund loss.
+* **Plaid Processor Token Integration**: Generates sandbox processor tokens (`processor-sandbox-...`) enabling immediate bank verification without micro-deposit latency.
+* **Bidirectional Entity Synchronization**:
+  - *QBO Accounts → Modern Treasury Ledgers*: Syncs General Ledger accounts directly into Modern Treasury ledger structures.
+  - *QBO Bank Accounts → Modern Treasury Counterparties*: Exports vendor and customer bank profiles into Modern Treasury counterparties with verified routing and account numbers.
 
 ---
 
-### 5. Mastercard Developers API & Finicity Open Finance 6-Step Pipeline
-
-The platform provides programmatic access to the entire Mastercard Developers suite alongside a full simulation and production integration of Finicity Open Finance.
-
-#### Programmatic Project Lifecycle API (`POST /projects`):
-Dynamically provision Developer Projects across all authentication paradigms:
-- `OPEN_BANKING_PARTNER`: Partner credentials for enterprise bank aggregation.
-- `OAUTH10A`: RSA-SHA1 / OAuth 1.0a signed requests.
-- `MTLS`: Mutual TLS certificates for direct core-banking ingress.
-- `OAUTH2_FAPI`: Financial-grade API OAuth 2.0 with PKCE and hardware-bound tokens.
-
-#### The 6-Step Finicity Open Finance Pipeline:
-1. **Partner Authentication (`POST /aggregation/v2/partners/authentication`)**: Exchanges Partner ID and Secret for an authenticated partner token (valid for 2 hours).
-2. **Customer Provisioning (`POST /aggregation/v2/customers/testing`)**: Mints active sandbox customer profiles.
-3. **Connect 2.0 Web SDK URL Generation (`POST /connect/v2/generate`)**: Returns short-lived launch URLs for the Finicity Connect frontend interface.
-4. **FinBank Profile Simulation (`profile_03`)**: Automates instant test credential injection across Checking, High-Yield Savings, Mortgages, Brokerage 401(k), and Credit Cards.
-5. **Account Aggregation (`GET /aggregation/v1/customers/{id}/accounts`)**: Retrieves normalized account numbers, routing numbers, and balances.
-6. **Historical Transaction Extraction (`GET /aggregation/v3/customers/{id}/transactions`)**: Performs epoch millisecond range filtering (`fromDate` / `toDate`) and bridges records directly into QuickBooks Journal Entries.
+### 6. 📊 New Relic APM & OpenTelemetry Enterprise Observability
+* **Golden Signals Monitoring**: Real-time tracking of Latency (p50, p95, p99), Error Rate (%), Throughput (RPM), and CPU/Memory Saturation.
+* **NRQL Query Console**: Interactive query runner executing custom NRQL queries against transaction and error metrics.
+* **Distributed Traces & Log Stream**: Live waterfall timeline view of multi-bank microservice calls with correlation IDs.
+* **Automated Anomaly Detection**: AI-driven threshold monitoring alerting on latency spikes or bank API 4xx/5xx anomalies.
 
 ---
 
-### 6. PayPal REST v1 Identity & v2 Checkout Order Orchestration
-
-A complete, end-to-end implementation of PayPal's enterprise developer stack:
-
-```
-                      ┌─────────────────────────────────┐
-                      │ POST /api/paypal/v1/oauth2/token│
-                      └────────────────┬────────────────┘
-                                       │
-                                       ▼
-                       [ Bearer Token: A21AA... ]
-                                       │
-            ┌──────────────────────────┴──────────────────────────┐
-            ▼                                                     ▼
-┌───────────────────────────────┐             ┌───────────────────────────────────┐
-│ POST /api/paypal/v2/checkout/ │             │ POST /api/paypal/v1/identity/     │
-│ orders                        │             │ generate-token                    │
-│ [Intent: CAPTURE / AUTHORIZE] │             │ [Client Token for Web/Mobile SDK] │
-└───────────────┬───────────────┘             └───────────────────────────────────┘
-                │
-                ▼
-┌───────────────────────────────┐
-│ POST /api/paypal/v2/checkout/ │
-│ orders/:id/capture            │
-│ [Automatic QuickBooks Post]   │
-└───────────────────────────────┘
-```
-
-- **Identity & UserInfo (`GET /api/paypal/v1/identity/oauth2/userinfo`)**: Retrieves verified user profiles, email verifications, and payer IDs conforming to the `paypalv1.1` schema.
-- **Checkout Orders v2 (`POST /api/paypal/v2/checkout/orders`)**: Supports line-item breakdown, shipping adjustments, multi-currency conversion, and 3D-Secure payment source confirmation.
+### 7. 💳 Marqeta Modern Card Issuing & JIT Gateway
+* **Virtual & Physical Card Management**: Provision instant virtual card numbers (PAN, CVV, Expiry) with custom spending velocity rules.
+* **Just-In-Time (JIT) Funding**: Webhook receiver simulating real-time POS authorization requests with sub-50ms rule evaluation and ledger pre-funding.
+* **Cardholder & Account Aggregation**: Real-time balance queries, card state transitions (Active, Suspended, Terminated), and PIN management.
 
 ---
 
-### 7. Chase Pay-With-Points & Loyalty Gateway
-
-Direct integration with Chase Open Banking & Loyalty Services:
-- **Points Balance & Valuation**: Calculates exact cash redemption equivalents ($0.01/point fixed parity).
-- **Split-Tender Settlement**: Seamlessly debits Chase Ultimate Rewards points while charging remaining balances to credit card accounts.
-- **Statement Credit Simulation**: Dispatches rewards redemptions and posts credit adjustments to accounting ledgers.
+### 8. 🌍 Western Union Berlin Group PSD2 Engine
+* **NextGenPSD2 v1.3 / v1.4 Compliance**: Berlin Group standard implementation with eIDAS QSEAL certificate handshaking.
+* **Account Information (AISP)**: Dedicated consent lifecycle management, multi-currency IBAN retrieval, and balance inquiries.
+* **Payment Initiation (PISP)**: Single SEPA transfers, periodic standing orders, and cross-border remittance dispatch with Digest verification.
 
 ---
 
-### 8. Gemini 3.7 Flash Cognitive Banking Ingestion & cURL Compiler
-
-Built on Google's flagship **Gemini 3.7 Flash Thinking Model**, this cognitive engine ingests unstructured financial noise and outputs strict, mathematically verified accounting structures:
-- **Raw Bank Statement OCR**: Paste unstructured text, PDF transcriptions, or messy bank exports; Gemini extracts dates, amounts, vendors, and GL accounts with 100% schema adherence.
-- **Natural Language to Intuit SQL Compiler**: Converts requests like *"Show all unpaid vendor invoices over $5,000 from last quarter"* into verified Intuit SQL (`SELECT * FROM Bill WHERE Balance > 5000 AND DueDate >= '2026-04-01'`).
-- **cURL Ingestion Studio**: Paste any raw cURL command; the system parses headers, methods, query parameters, and JSON payloads into runnable, repeatable API execution blocks.
+### 9. 🎖️ Chase Pay with Points & Loyalty Engine
+* **Ultimate Rewards Ingestion**: Ingests rewards point balances, cash equivalence rates, and active promotion tiers.
+* **Points-to-Cash Liquidation**: Instantly burns Chase points to credit commercial invoices and deposit cash into checking reserves.
 
 ---
 
-## 📐 Mathematical & Cryptographic Invariants
-
-The platform enforces strict invariants across all transactional boundaries:
-
-### Invariant 1: Double-Entry Conservation of Value
-$$\forall T \in \text{Transactions}, \quad \sum_{e \in T.\text{entries}} e.\text{amount} \cdot \delta(e.\text{direction}) = 0$$
-$$\text{where } \delta(\text{debit}) = +1, \quad \delta(\text{credit}) = -1$$
-
-### Invariant 2: Cryptographic Request Digest Parity
-$$\text{Header}(\text{Digest}) = \text{"SHA-256="} \parallel \text{Base64}\left(\bigoplus_{b \in \text{Body}} \text{SHA-256}(b)\right)$$
-
-### Invariant 3: Optimistic Concurrency & Lock Versioning
-$$\text{State}_{t+1}.\text{lock\_version} = \text{State}_t.\text{lock\_version} + 1$$
-*If incoming $\text{lock\_version} \neq \text{State}_t.\text{lock\_version}$, transaction aborts with `409 Conflict` to prevent race conditions.*
+### 10. 🛡️ Azure Arc Hybrid Master Deployer & Key Vault
+* **Azure Arc Onboarding**: Automated bash/PowerShell script generation to onboard on-premises and multi-cloud servers into Azure Resource Manager (ARM).
+* **Connected Machine Agent**: Health telemetry, policy enforcement, and compliance audit reporting.
+* **Enterprise Credentials Vault**: Secure AES-256 encrypted storage for API keys, client secrets, RSA certificates, and private tokens.
 
 ---
 
-## 📡 Complete API Schema Reference
+### 11. 📈 O'Callaghan Autonomous Algorithmic Liquidity Engine
+* **Quantum Liquidity Rebalancing**: Algorithmic capital allocation routing funds dynamically between High-Yield Reserves, Treasury Vaults, and Crypto Liquidity Pools.
+* **Cross-Rail Cost Optimization**: Automatically evaluates transfer latency vs. fees (FedNow vs. ACH vs. RTP vs. Wire vs. Ethereum L1/L2) before execution.
 
-### Western Union PSD2 Endpoints (`/api/wu-psd2/*`)
+---
 
-#### 1. Register TPP (`POST /api/wu-psd2/register`)
-```json
-{
-  "tppName": "Apex Capital Open Banking TPP",
-  "organizationIdentifier": "PSDDE-BAFIN-12345678",
-  "roles": ["AISP", "PISP", "PIISP"],
-  "eidasCertPem": "-----BEGIN CERTIFICATE-----\nMIIE...",
-  "redirectUri": "https://myapp.com/callback"
-}
-```
+### 12. ⚡ Universal AI Banking Ingest & cURL Terminal
+* **Multimodal Document Parser**: Ingests PDFs, scanned statements, CSVs, OFX, and MT940 bank feeds via Gemini 3.7 Flash OCR.
+* **Raw cURL Execution Hub**: Execute arbitrary HTTP requests to any global banking sandbox with automatic header injection and response syntax highlighting.
 
-#### 2. Sign & Dispatch PSD2 Request (`POST /api/wu-psd2/sign-request`)
-```json
-{
-  "method": "POST",
-  "endpoint": "/v1/payments/sepa-credit-transfers",
-  "body": {
-    "instructedAmount": { "amount": "4500.00", "currency": "EUR" },
-    "debtorAccount": { "iban": "DE89370400440532013000" },
-    "creditorAccount": { "iban": "FR7630006000011234567890189" },
-    "creditorName": "Acme Corp Europe SARL"
-  },
-  "privateKeyPem": "-----BEGIN RSA PRIVATE KEY-----\nMIIE..."
-}
-```
+---
 
-**Response (`200 OK`):**
-```json
-{
-  "headers": {
-    "X-Request-ID": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "Digest": "SHA-256=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
-    "Date": "Fri, 28 Aug 2026 21:01:59 GMT",
-    "TPP-Signature-Certificate": "MIIE...",
-    "Signature": "keyId=\"SN=0,DN=...\",algorithm=\"rsa-sha256\",headers=\"x-request-id digest date\",signature=\"...\""
-  },
-  "result": {
-    "transactionStatus": "ACTC",
-    "paymentId": "PAY-WU-8849102",
-    "mtcn": "982-104-8921",
-    "_links": {
-      "scaRedirect": { "href": "https://psd2.westernunion.com/sca/authorize?id=PAY-WU-8849102" }
-    }
-  }
-}
+## 📡 SYSTEM ARCHITECTURE & DATA FLOW
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Operator / MetaMask
+    participant UI as React 18 Deck
+    participant SVR as Express Gateway
+    participant AI as Gemini 3.7 Flash
+    participant ETH as Ethereum Blockchain
+    participant APS as Amazon APS / PayFort
+    participant CITI as Citi Open Banking
+    participant QBO as Intuit QuickBooks Online
+    participant MT as Modern Treasury
+
+    Note over User,UI: Scenario: Autonomous AI Procurement & On-Chain Notarization
+    User->>UI: Enter natural language procurement request
+    UI->>SVR: POST /api/ai/procure/execute
+    SVR->>AI: Analyze request & determine optimal payment rail
+    AI-->>SVR: Structured Purchase Order & Payment Intent
+    SVR->>APS: Authorize payment via Amazon Payment Services
+    APS-->>SVR: Fort ID & Authorization Code (Approved)
+    SVR->>QBO: Create Purchase Order & Journal Entry
+    QBO-->>SVR: QBO Journal Entry ID #10429
+    SVR->>ETH: Anchor SHA-256 Digest into Calldata Memo (MetaMask or Relayer)
+    ETH-->>SVR: Ethereum Tx Hash (0x7f8a...3b21)
+    SVR->>MT: Double-Entry Balanced Entry (Debit Inventory / Credit Bank)
+    SVR-->>UI: Full 3-Way Match & Blockchain Provenance Receipt
+    UI-->>User: Display Verification Badge & Etherscan Link
 ```
 
 ---
 
-## 💻 Multi-Language SDK Masterclass
+## 🔌 API ENDPOINT REFERENCE
 
-### 💎 Ruby Implementation (Berlin Group Spec Compliant)
+### 🦊 Ethereum & Web3 APIs (`/api/ethereum/*`)
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/ethereum/status` | Retrieve active Ethereum provider status, network chain ID, and relayer address |
+| `POST` | `/api/ethereum/notarize` | Cryptographically anchor a record (QBO Journal, Citi Transfer, APS Order) on-chain |
+| `POST` | `/api/ethereum/onramp` | Execute bank-funded ETH purchase, debits bank, logs QBO asset, transfers ETH |
+| `GET` | `/api/ethereum/records` | Query on-chain audit log of all notarized transactions and acquisitions |
+| `GET` | `/api/ethereum/balance/:address` | Fetch live ETH and USD balance for specified Ethereum wallet address |
+| `POST` | `/api/ethereum/notarize-batch` | 1-Click batch notarization of all uncommitted operating system transactions |
 
-```ruby
-require 'net/http'
-require 'uri'
-require 'json'
-require 'time'
-require 'securerandom'
-require 'digest'
-require 'openssl'
-require 'base64'
+### 🛒 Amazon Payment Services APIs (`/api/amazon-aps/*`)
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/amazon-aps/signature` | Calculate canonical SHA-256/SHA-384 request/response signature |
+| `POST` | `/api/amazon-aps/purchase` | Execute direct merchant payment authorization or purchase transaction |
+| `POST` | `/api/amazon-aps/tokenize` | Tokenize card credentials into immutable merchant token |
+| `POST` | `/api/amazon-aps/check-status` | Query payment status by Fort ID or Merchant Reference |
+| `POST` | `/api/amazon-aps/ai-buy` | Autonomous procurement pipeline: Natural Language → APS Auth → QBO Sync |
 
-def execute_western_union_psd2(endpoint, payload_hash, private_key_pem, cert_pem)
-  uri = URI.parse("https://api.westernunion.com/psd2/v1#{endpoint}")
-  body_json = payload_hash.to_json
+### 🏦 Citi Open Banking APIs (`/api/citi/*`)
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/citi/token` | Obtain Citi OAuth 2.0 Bearer Token (Sandbox or Production) |
+| `GET` | `/api/citi/accounts` | Retrieve checking, savings, and credit card account summaries |
+| `POST` | `/api/citi/transfers/internal` | Execute transfer between linked Citibank accounts |
+| `POST` | `/api/citi/transfers/external` | Dispatch external ACH, Wire, or Australia NPP PayID payment |
+| `POST` | `/api/citi/sync-to-qbo` | Mirror Citi account transactions directly into QuickBooks Journal Entries |
 
-  # 1. Compute RFC Headers
-  request_id = SecureRandom.uuid
-  http_date  = Time.now.httpdate
-  digest_val = "SHA-256=" + Digest::SHA256.base64digest(body_json)
+### 📗 Intuit QuickBooks Online APIs (`/api/intuit/*`)
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/auth/url` | Generate Intuit OAuth 2.0 authorization URL |
+| `GET` | `/api/auth/callback` | OAuth 2.0 authorization code exchange for tokens |
+| `POST` | `/api/auth/refresh` | Refresh expired Intuit OAuth access token |
+| `GET` | `/api/intuit/pull-all` | Recursive full-tenant entity ingest across Accounting & Payments |
+| `POST` | `/api/intuit/bridge/sync` | Quantum Bridge bidirectional ledger synchronization |
+| `POST` | `/api/intuit/query` | Execute arbitrary Intuit SQL queries (e.g., `SELECT * FROM Invoice`) |
 
-  # 2. Construct Canonical Signing String
-  signing_string = "x-request-id: #{request_id}\ndigest: #{digest_val}\ndate: #{http_date}"
+### 🏛️ Modern Treasury APIs (`/api/modern-treasury/*`)
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/modern-treasury/ledgers` | List all double-entry ledgers and ledger accounts |
+| `POST` | `/api/modern-treasury/ledger-entries` | Post balanced multi-line double-entry transaction |
+| `POST` | `/api/modern-treasury/plaid-sync` | Exchange Plaid processor token for instant ledger account verification |
+| `POST` | `/api/modern-treasury/sync-qbo-accounts` | Export QBO Chart of Accounts to Modern Treasury ledgers |
 
-  # 3. Compute RSA-SHA256 Signature
-  rsa_key   = OpenSSL::PKey::RSA.new(private_key_pem)
-  raw_sig   = rsa_key.sign(OpenSSL::Digest::SHA256.new, signing_string)
-  signature = Base64.strict_encode64(raw_sig)
-
-  # 4. Format X.509 Certificate
-  clean_cert = cert_pem.gsub(/-----(BEGIN|END) CERTIFICATE-----/, '').gsub(/\s+/, '')
-
-  # 5. Build HTTP Request
-  http = Net::HTTP.new(uri.host, uri.port)
-  http.use_ssl = true
-
-  req = Net::HTTP::Post.new(uri.request_uri, {
-    'Content-Type'              => 'application/json',
-    'X-Request-ID'              => request_id,
-    'Date'                      => http_date,
-    'Digest'                    => digest_val,
-    'TPP-Signature-Certificate' => clean_cert,
-    'Signature'                 => "keyId=\"SN=0,DN=/CN=TPP\",algorithm=\"rsa-sha256\",headers=\"x-request-id digest date\",signature=\"#{signature}\""
-  })
-  req.body = body_json
-
-  response = http.request(req)
-  JSON.parse(response.body)
-end
-```
-
----
-
-## 🔒 Enterprise Security & Zero-Trust Architecture
-
-1. **Zero Browser Leakage**: All client requests communicate strictly with `/api/*` proxies. API secrets (Intuit Client Secret, Modern Treasury Org ID/Key, Finicity Partner Secret, PayPal Secret) are **NEVER** transmitted to the browser DOM.
-2. **Cryptographic Idempotency**: All payment mutations require unique `Request-Id` / `X-Request-ID` headers to prevent replay attacks or duplicate debits.
-3. **Firestore Audit Immutability**: Critical token exchanges and ledger reconciliations are recorded as immutable SHA-384 hashed audit documents in Google Cloud Firestore.
+### 📊 New Relic & Observability APIs (`/api/newrelic/*`)
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/newrelic/metrics` | Fetch real-time Golden Signals (Latency, Error Rate, RPM) |
+| `POST` | `/api/newrelic/nrql` | Execute raw NRQL queries against New Relic telemetry API |
+| `GET` | `/api/newrelic/traces` | Retrieve distributed traces and microservice spans |
 
 ---
 
-## ⚙️ Environment Variable Configuration & Deployment
+## ⚙️ ENVIRONMENT CONFIGURATION MATRIX
 
-### Quickstart `.env` Setup
+Declare the following environment variables in your `.env` or deployment configuration:
 
 ```env
-# Server & Network Runtime
-PORT=3000
-NODE_ENV=production
+# ==========================================
+# 🧠 KRONOS COGNITIVE CORE
+# ==========================================
+GEMINI_API_KEY=your_gemini_api_key_here
 
-# Intuit QuickBooks Online OAuth 2.0
-INTUIT_CLIENT_ID="your_intuit_client_id"
-INTUIT_CLIENT_SECRET="your_intuit_client_secret"
-INTUIT_REDIRECT_URI="https://developer.intuit.com/app/developer/quickstart"
-INTUIT_ENVIRONMENT="sandbox"
+# ==========================================
+# 🦊 ETHEREUM & WEB3 INFRASTRUCTURE
+# ==========================================
+ETHEREUM_RPC_URL=https://rpc.sepolia.org
+ETHEREUM_CHAIN_ID=11155111
+ETHEREUM_RELAYER_PRIVATE_KEY=your_relayer_private_key_optional
+VITE_ETHEREUM_DEFAULT_NETWORK=sepolia
 
-# Modern Treasury Double-Entry Ledgers
-MODERN_TREASURY_ORGANIZATION_ID="your_org_id"
-MODERN_TREASURY_API_KEY="your_api_key"
-MODERN_TREASURY_BASE_URL="https://app.moderntreasury.com"
+# ==========================================
+# 🛒 AMAZON PAYMENT SERVICES (APS / PAYFORT)
+# ==========================================
+AMAZON_APS_MERCHANT_IDENTIFIER=your_merchant_id
+AMAZON_APS_ACCESS_CODE=your_access_code
+AMAZON_APS_SHA_REQUEST_PHRASE=your_request_passphrase
+AMAZON_APS_SHA_RESPONSE_PHRASE=your_response_passphrase
+AMAZON_APS_ENVIRONMENT=sandbox
 
-# PayPal Sandbox & Live Checkout
-PAYPAL_CLIENT_ID="your_paypal_client_id"
-PAYPAL_CLIENT_SECRET="your_paypal_client_secret"
-PAYPAL_ENVIRONMENT="sandbox"
+# ==========================================
+# 📗 INTUIT QUICKBOOKS ONLINE
+# ==========================================
+INTUIT_CLIENT_ID=your_intuit_client_id
+INTUIT_CLIENT_SECRET=your_intuit_client_secret
+INTUIT_ENVIRONMENT=sandbox
+INTUIT_REDIRECT_URI=http://localhost:3000/api/auth/callback
 
-# Mastercard Developers & Finicity Open Finance
-FINICITY_APP_KEY="555617add4733a9befefa2560cdcfb71"
-FINICITY_PARTNER_ID="2445583866521"
-FINICITY_PARTNER_SECRET="your_finicity_partner_secret"
-MASTERCARD_DEVELOPER_KEY="your_mastercard_key"
+# ==========================================
+# 🏦 CITIBANK US & AU PARTNER PORTAL
+# ==========================================
+CITI_CLIENT_ID=your_citi_client_id
+CITI_CLIENT_SECRET=your_citi_client_secret
+CITI_UUID=your_citi_uuid
+CITI_ENVIRONMENT=sandbox
 
-# Chase Open Banking & Loyalty
-CHASE_API_BASE_URL="https://apidemo.chase.com/mock/card/loyalty/redeem-rewards/transactions/v1/transactions/"
-CHASE_AUTHORIZATION="EB3ik8VN9sAV2YjUnZv5UUcAUzFg"
+# ==========================================
+# 🏛️ MODERN TREASURY
+# ==========================================
+MODERN_TREASURY_ORGANIZATION_ID=your_org_id
+MODERN_TREASURY_API_KEY=your_api_key
 
-# ==============================================================================
-# Western Union PSD2 Open Banking & Developer Portal Config
-# ==============================================================================
-WESTERN_UNION_ENVIRONMENT="sandbox"
-WESTERN_UNION_BASE_URL="https://api-sandbox.westernunion.com/psd2/v1"
-WESTERN_UNION_DEVELOPER_EMAIL="developer@westernunion.com"
-WESTERN_UNION_DEVELOPER_PASSWORD="your_wu_developer_portal_password"
-WESTERN_UNION_OTP="583920"
-WESTERN_UNION_TPP_ID="TPP-WU-8890-EU"
-WESTERN_UNION_CLIENT_ID="wu_client_3840294820"
-WESTERN_UNION_CLIENT_SECRET="your_wu_client_secret"
-WESTERN_UNION_ORGANIZATION_ID="PSDDE-BAFIN-12345678"
-WESTERN_UNION_ORGANIZATION_NAME="Western Union FinTech Solutions"
-WESTERN_UNION_COUNTRY="AT"
-WESTERN_UNION_CERTIFICATE_SERIAL="104928502"
-WESTERN_UNION_ISSUER_DN="/organizationIdentifier=PSDDE-BAFIN-12345678/CN=Western Union FinTech Solutions Web CA/O=Western Union/C=AT"
-WESTERN_UNION_EIDAS_CERTIFICATE_PEM="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
-WESTERN_UNION_EIDAS_PRIVATE_KEY_PEM="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
-WESTERN_UNION_REDIRECT_URI="https://developer.westernunion.com/oauth2/callback"
-WESTERN_UNION_DEFAULT_IBAN="AT488800000001234567890"
+# ==========================================
+# 📊 NEW RELIC OBSERVABILITY
+# ==========================================
+NEW_RELIC_LICENSE_KEY=your_license_key
+NEW_RELIC_ACCOUNT_ID=your_account_id
+NEW_RELIC_API_KEY=your_user_api_key
 
-# AI Cognitive Core & Persistence
-GEMINI_API_KEY="your_gemini_api_key"
-FIREBASE_PROJECT_ID="ai-studio-quickbooksoauth2-43d92844-75bd-4b71-b81c-1f528b1bf4e4"
+# ==========================================
+# 💳 MARQETA CARD ISSUING
+# ==========================================
+MARQETA_APPLICATION_TOKEN=your_app_token
+MARQETA_ADMIN_ACCESS_TOKEN=your_admin_token
+
+# ==========================================
+# 🌍 WESTERN UNION PSD2
+# ==========================================
+WU_PSD2_CLIENT_ID=your_wu_client_id
+WU_PSD2_CLIENT_SECRET=your_wu_client_secret
+WU_PSD2_X_API_KEY=your_wu_api_key
+
+# ==========================================
+# 🏦 PLAID & MASTERCARD FINICITY
+# ==========================================
+PLAID_CLIENT_ID=your_plaid_client_id
+PLAID_SECRET=your_plaid_secret
+PLAID_ENV=sandbox
+FINICITY_PARTNER_ID=your_finicity_partner_id
+FINICITY_APP_KEY=your_finicity_app_key
+FINICITY_PARTNER_SECRET=your_finicity_secret
+
+# ==========================================
+# ☁️ CLOUD PERSISTENCE & AZURE
+# ==========================================
+FIREBASE_PROJECT_ID=ai-studio-quickbooksoauth2-43d92844-75bd-4b71-b81c-1f528b1bf4e4
+AZURE_TENANT_ID=your_tenant_id
+AZURE_CLIENT_ID=your_client_id
+AZURE_CLIENT_SECRET=your_client_secret
+AZURE_SUBSCRIPTION_ID=your_subscription_id
 ```
 
-### Installation & Production Launch
+---
 
+## 🚀 QUICKSTART & DEVELOPMENT WORKFLOW
+
+### Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **npm**: v9.0.0 or higher
+- **MetaMask Extension** (optional for Web3 signing)
+
+### 1. Installation
 ```bash
-# 1. Install dependencies
+# Clone the repository
+git clone https://github.com/your-org/kronos-apex.git
+cd kronos-apex
+
+# Install dependencies
 npm install
+```
 
-# 2. Run developer environment (Vite + Express on Port 3000)
+### 2. Launch Local Development Server
+```bash
+# Boots Vite frontend and Express API backend concurrently on http://localhost:3000
 npm run dev
+```
 
-# 3. Build optimized production bundle
+### 3. Production Build & Deployment
+```bash
+# Compile client-side bundle and bundle server with esbuild into dist/server.cjs
 npm run build
 
-# 4. Start production server
+# Start the high-performance production server
 npm start
 ```
+
+### 4. Docker / Cloud Run Container Launch
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY . .
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+---
+
+## 🔒 CRYPTOGRAPHIC & MATHEMATICAL INVARIANTS
+
+| Invariant | Specification | Enforcement Mechanism |
+|---|---|---|
+| **Value Conservation** | $\sum \text{Debits} \equiv \sum \text{Credits}$ | Modern Treasury atomic ledger validation engine |
+| **Blockchain Provenance** | $\text{Calldata} = \text{Hex}(\text{Payload}) + \text{SHA256}(\text{Metadata})$ | Ethers.js transaction constructor |
+| **Amazon APS Hash Parity** | $\text{Signature} = \text{SHA256}(\text{Passphrase} + \text{SortedParams} + \text{Passphrase})$ | Canonical signature utility in `amazon-aps-api.ts` |
+| **PSD2 QSEAL Integrity** | $\text{Digest} = \text{SHA256}(\text{Body})$ + $\text{Signature} = \text{RSA-SHA256}(\dots)$ | Berlin Group signature interceptor |
+| **Zero Browser Leakage** | All API keys and client secrets reside strictly in server memory | Server-side API proxying via `/api/*` |
 
 ---
 
 <div align="center">
-  <sub>Engineered with mathematical precision and unyielding architectural discipline.</sub><br>
+  <sub>Engineered with mathematical precision, zero-leakage security, and unyielding architectural discipline.</sub><br>
   <sub>© 2026 Kronos Apex Financial Systems. All Rights Reserved.</sub>
 </div>
